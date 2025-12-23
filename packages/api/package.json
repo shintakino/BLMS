@@ -1,28 +1,31 @@
 {
-  "name": "@BLMS/api",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {},
-  "dependencies": {
-    "@orpc/server": "^1.12.2",
-    "@orpc/client": "^1.12.2",
-    "@orpc/openapi": "^1.12.2",
-    "@orpc/zod": "^1.12.2",
-    "next": "^16.0.10",
-    "dotenv": "^17.2.2",
-    "zod": "^4.1.13",
-    "@BLMS/auth": "*",
-    "@BLMS/db": "*"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@BLMS/config": "*"
-  }
+	"name": "@BLMS/api",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@BLMS/auth": "*",
+		"@BLMS/db": "*",
+		"@orpc/client": "^1.12.2",
+		"@orpc/openapi": "^1.12.2",
+		"@orpc/server": "^1.12.2",
+		"@orpc/zod": "^1.12.2",
+		"dotenv": "^17.2.2",
+		"next": "^16.0.10",
+		"zod": "^4.1.13"
+	},
+	"devDependencies": {
+		"@BLMS/config": "*",
+		"typescript": "^5",
+		"vitest": "^4.0.16"
+	}
 }

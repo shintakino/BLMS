@@ -1,0 +1,107 @@
+{
+	"region": {
+		"code": "XII",
+		"name": "SOCCSKSARGEN",
+		"provinces": [
+			{
+				"name": "South Cotabato",
+				"cities": [
+					{
+						"name": "Koronadal City",
+						"stations": ["Koronadal City Fire Station"]
+					}
+				],
+				"municipalities": [
+					{ "name": "Banga", "stations": ["Banga Fire Station"] },
+					{ "name": "Lake Sebu", "stations": ["Lake Sebu Fire Station"] },
+					{ "name": "Norala", "stations": ["Norala Fire Station"] },
+					{ "name": "Polomolok", "stations": ["Polomolok Fire Station"] },
+					{ "name": "Santo Niño", "stations": ["Santo Niño Fire Station"] },
+					{ "name": "Surallah", "stations": ["Surallah Fire Station"] },
+					{ "name": "Tampakan", "stations": ["Tampakan Fire Station"] },
+					{ "name": "Tantangan", "stations": ["Tantangan Fire Station"] },
+					{ "name": "Tupi", "stations": ["Tupi Fire Station"] }
+				]
+			},
+			{
+				"name": "Cotabato (North Cotabato)",
+				"cities": [
+					{
+						"name": "Kidapawan City",
+						"stations": ["Kidapawan City Fire Station"]
+					}
+				],
+				"municipalities": [
+					{ "name": "Alamada", "stations": ["Alamada Fire Station"] },
+					{ "name": "Aleosan", "stations": ["Aleosan Fire Station"] },
+					{ "name": "Antipas", "stations": ["Antipas Fire Station"] },
+					{ "name": "Arakan", "stations": ["Arakan Fire Station"] },
+					{ "name": "Banisilan", "stations": ["Banisilan Fire Station"] },
+					{ "name": "Carmen", "stations": ["Carmen Fire Station"] },
+					{ "name": "Kabacan", "stations": ["Kabacan Fire Station"] },
+					{ "name": "Libungan", "stations": ["Libungan Fire Station"] },
+					{ "name": "Magpet", "stations": ["Magpet Fire Station"] },
+					{ "name": "Makilala", "stations": ["Makilala Fire Station"] },
+					{ "name": "Matalam", "stations": ["Matalam Fire Station"] },
+					{ "name": "Midsayap", "stations": ["Midsayap Fire Station"] },
+					{ "name": "Pigcawayan", "stations": ["Pigcawayan Fire Station"] },
+					{ "name": "Pikit", "stations": ["Pikit Fire Station"] },
+					{
+						"name": "President Roxas",
+						"stations": ["President Roxas Fire Station"]
+					},
+					{ "name": "Tulunan", "stations": ["Tulunan Fire Station"] }
+				]
+			},
+			{
+				"name": "Sultan Kudarat",
+				"cities": [
+					{
+						"name": "Tacurong City",
+						"stations": ["Tacurong City Fire Station"]
+					}
+				],
+				"municipalities": [
+					{ "name": "Bagumbayan", "stations": ["Bagumbayan Fire Station"] },
+					{ "name": "Columbio", "stations": ["Columbio Fire Station"] },
+					{ "name": "Esperanza", "stations": ["Esperanza Fire Station"] },
+					{ "name": "Isulan", "stations": ["Isulan Fire Station"] },
+					{ "name": "Kalamansig", "stations": ["Kalamansig Fire Station"] },
+					{ "name": "Lambayong", "stations": ["Lambayong Fire Station"] },
+					{ "name": "Lebak", "stations": ["Lebak Fire Station"] },
+					{ "name": "Lutayan", "stations": ["Lutayan Fire Station"] },
+					{ "name": "Palimbang", "stations": ["Palimbang Fire Station"] },
+					{
+						"name": "President Quirino",
+						"stations": ["President Quirino Fire Station"]
+					},
+					{
+						"name": "Senator Ninoy Aquino",
+						"stations": ["Sen. Ninoy Aquino Fire Station"]
+					}
+				]
+			},
+			{
+				"name": "Sarangani",
+				"municipalities": [
+					{ "name": "Alabel", "stations": ["Alabel Fire Station"] },
+					{ "name": "Glan", "stations": ["Glan Fire Station"] },
+					{ "name": "Kiamba", "stations": ["Kiamba Fire Station"] },
+					{ "name": "Maasim", "stations": ["Maasim Fire Station"] },
+					{ "name": "Maitum", "stations": ["Maitum Fire Station"] },
+					{ "name": "Malapatan", "stations": ["Malapatan Fire Station"] },
+					{ "name": "Malungon", "stations": ["Malungon Fire Station"] }
+				]
+			},
+			{
+				"name": "General Santos City",
+				"cities": [
+					{
+						"name": "General Santos City",
+						"stations": ["General Santos City Fire Station"]
+					}
+				]
+			}
+		]
+	}
+}

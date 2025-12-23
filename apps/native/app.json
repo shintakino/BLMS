@@ -1,17 +1,17 @@
 {
-  "expo": {
-    "scheme": "BLMS",
-    "userInterfaceStyle": "automatic",
-    "orientation": "default",
-    "web": {
-      "bundler": "metro"
-    },
-    "name": "BLMS",
-    "slug": "BLMS",
-    "plugins": ["expo-font"],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    }
-  }
+	"expo": {
+		"scheme": "BLMS",
+		"userInterfaceStyle": "automatic",
+		"orientation": "default",
+		"web": {
+			"bundler": "metro"
+		},
+		"name": "BLMS",
+		"slug": "BLMS",
+		"plugins": ["expo-font"],
+		"experiments": {
+			"typedRoutes": true,
+			"reactCompiler": true
+		}
+	}
 }

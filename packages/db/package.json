@@ -1,30 +1,32 @@
 {
-  "name": "@BLMS/db",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate"
-  },
-  "devDependencies": {
-    "drizzle-kit": "^0.31.8",
-    "@types/pg": "^8.15.6",
-    "typescript": "^5",
-    "@BLMS/config": "*"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.45.1",
-    "pg": "^8.16.3",
-    "dotenv": "^17.2.2",
-    "zod": "^4.1.13"
-  }
+	"name": "@BLMS/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:studio": "drizzle-kit studio",
+		"db:migrate": "drizzle-kit migrate",
+		"db:seed": "tsx src/seed.ts"
+	},
+	"devDependencies": {
+		"@BLMS/config": "*",
+		"@types/pg": "^8.15.6",
+		"drizzle-kit": "^0.31.8",
+		"tsx": "^4.21.0",
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"dotenv": "^17.2.2",
+		"drizzle-orm": "^0.45.1",
+		"pg": "^8.16.3",
+		"zod": "^4.1.13"
+	}
 }
