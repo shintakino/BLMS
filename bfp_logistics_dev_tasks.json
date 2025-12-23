@@ -123,13 +123,13 @@
 		"id": "T-040",
 		"category": "Inventory",
 		"task": "Implement inventory CRUD",
-		"status": "pending"
+		"status": "done"
 	},
 	{
 		"id": "T-041",
 		"category": "Inventory",
 		"task": "Implement asset transfer logic",
-		"status": "pending"
+		"status": "done"
 	},
 	{
 		"id": "T-050",

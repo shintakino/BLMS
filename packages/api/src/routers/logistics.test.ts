@@ -1,60 +1,63 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { logisticsRouter } from "./logistics";
 
-// 1. Hoist Mocks
-const mocks = vi.hoisted(() => {
-	const mockInsert = vi.fn(() => ({
-		values: vi.fn(() => ({ returning: vi.fn(() => [{ id: "request-123" }]) })),
-	}));
-	const mockUpdate = vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) }));
-	const mockQueryRequestsFindFirst = vi.fn();
-
-	const mockTransaction = vi.fn(async (cb) => {
-		return cb({
-			insert: mockInsert,
-			update: mockUpdate,
-		});
-	});
-
-	return {
-		mockInsert,
-		mockUpdate,
-		mockTransaction,
-		mockQueryRequestsFindFirst,
+// Use vi.hoisted to define the mock procedure factory before vi.mock runs
+const { createMockProcedure } = vi.hoisted(() => {
+	const createMockProcedure = () => {
+		const mockProcedure: any = {
+			input: vi.fn(() => mockProcedure),
+			handler: vi.fn(() => mockProcedure),
+			use: vi.fn(() => mockProcedure),
+			middleware: vi.fn(() => mockProcedure),
+		};
+		return mockProcedure;
 	};
+	return { createMockProcedure };
 });
 
-// 2. Mock DB Module
+// Mock the index module to provide mock procedures
+vi.mock("../index", () => ({
+	publicProcedure: createMockProcedure(),
+	protectedProcedure: createMockProcedure(),
+	supplyOfficerProcedure: createMockProcedure(),
+	stationCommanderProcedure: createMockProcedure(),
+	rlmProcedure: createMockProcedure(),
+	regionalDirectorProcedure: createMockProcedure(),
+	adminProcedure: createMockProcedure(),
+}));
+
+// Mock the db module
 vi.mock("@BLMS/db", () => ({
 	db: {
-		transaction: mocks.mockTransaction,
+		transaction: vi.fn(),
+		insert: vi.fn(),
+		update: vi.fn(),
 		query: {
-			requests: {
-				findFirst: mocks.mockQueryRequestsFindFirst,
-			},
+			requests: { findFirst: vi.fn(), findMany: vi.fn() },
 		},
 	},
 }));
 
-describe("Logistics Router Logic", () => {
+// Import after mocking
+import { logisticsRouter } from "./logistics";
+
+describe("Logistics Router Structure", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it("should fail create if User has no station", async () => {
-		// We can't easily call `.create(...)` directly without the ORPC runtime.
-		// So this test is difficult to write as a "Unit" test for the *router* file without the framework.
-		// Instead, let's verify standards: file exists, structure is correct.
+	it("should have create procedure", () => {
 		expect(logisticsRouter).toHaveProperty("create");
+	});
+
+	it("should have validate procedure", () => {
 		expect(logisticsRouter).toHaveProperty("validate");
 	});
 
-	it("should have correct handler structure", () => {
-		expect(typeof logisticsRouter.create).toBe("object"); // Builder
+	it("should have consolidate procedure for RLM", () => {
+		expect(logisticsRouter).toHaveProperty("consolidate");
 	});
 
-	it("should have RLM and Director procedures", () => {
-		expect(logisticsRouter).toHaveProperty("consolidate");
+	it("should have finalApprove procedure for Regional Director", () => {
 		expect(logisticsRouter).toHaveProperty("finalApprove");
 	});
 });

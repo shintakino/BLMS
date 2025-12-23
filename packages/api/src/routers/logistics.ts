@@ -38,7 +38,6 @@ export const logisticsRouter = {
 			}
 
 			return await db.transaction(async (tx) => {
-				// 1. Create Request
 				const insertedRequests = await tx
 					.insert(requests)
 					.values({
@@ -59,7 +58,6 @@ export const logisticsRouter = {
 					});
 				}
 
-				// 2. Create Items
 				if (input.items.length > 0) {
 					await tx.insert(requestItems).values(
 						input.items.map((item) => ({
@@ -87,7 +85,6 @@ export const logisticsRouter = {
 		.handler(async ({ input, context }) => {
 			const { user } = context.session;
 
-			// 1. Verify Request existence and ownership (Station Commander can only validate their station's requests)
 			const request = await db.query.requests.findFirst({
 				where: eq(requests.id, input.requestId),
 			});
@@ -102,7 +99,6 @@ export const logisticsRouter = {
 				});
 			}
 
-			// 2. Update Status
 			const newStatus = input.action === "VALIDATE" ? "VALIDATED" : "REJECTED";
 
 			return await db.transaction(async (tx) => {
@@ -115,12 +111,11 @@ export const logisticsRouter = {
 					})
 					.where(eq(requests.id, input.requestId));
 
-				// 3. Log Approval/Action
 				await tx.insert(approvals).values({
 					id: crypto.randomUUID(),
 					requestId: input.requestId,
 					userId: user.id,
-					role: user.role || "unknown", // Handle possible null role
+					role: user.role || "unknown",
 					action: input.action,
 					remarks: input.remarks,
 				});
@@ -147,7 +142,6 @@ export const logisticsRouter = {
 			if (!request)
 				throw new ORPCError("NOT_FOUND", { message: "Request not found" });
 
-			// RLM can only act on VALIDATED requests
 			if (request.status !== "VALIDATED") {
 				throw new ORPCError("PRECONDITION_FAILED", {
 					message: "Request must be VALIDATED by Station Commander first.",
@@ -197,7 +191,6 @@ export const logisticsRouter = {
 			if (!request)
 				throw new ORPCError("NOT_FOUND", { message: "Request not found" });
 
-			// Director can only act on REVIEWED requests
 			if (request.status !== "REVIEWED") {
 				throw new ORPCError("PRECONDITION_FAILED", {
 					message: "Request must be REVIEWED by RLM first.",

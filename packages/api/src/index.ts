@@ -73,4 +73,5 @@ export const adminProcedure = protectedProcedure.use(
 	},
 );
 
+export * from "./routers/inventory";
 export * from "./routers/logistics";
