@@ -1,16 +1,19 @@
 import { useForm } from "@tanstack/react-form";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
-
 import { authClient } from "@/lib/auth-client";
-
-import Loader from "./loader";
 import { Button } from "./ui/button";
+
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-export default function SignInForm() {
+interface SignInFormProps {
+	onSwitchToSignUp?: () => void;
+}
+
+export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
 	const router = useRouter();
 	const { isPending } = authClient.useSession();
 
@@ -28,29 +31,37 @@ export default function SignInForm() {
 				{
 					onSuccess: () => {
 						router.push("/dashboard");
-						toast.success("Sign in successful");
+						toast.success("Welcome back!", {
+							description: "You have successfully signed in.",
+						});
 					},
 					onError: (error) => {
-						toast.error(error.error.message || error.error.statusText);
+						toast.error("Sign in failed", {
+							description:
+								error.error.message || "Please check your credentials.",
+						});
 					},
 				},
 			);
 		},
 		validators: {
 			onSubmit: z.object({
-				email: z.email("Invalid email address"),
-				password: z.string().min(8, "Password must be at least 8 characters"),
+				email: z.email("Please enter a valid email address"),
+				password: z.string().min(1, "Password is required"),
 			}),
 		},
 	});
 
-	if (isPending) {
-		return <Loader />;
-	}
-
 	return (
-		<div className="mx-auto mt-10 w-full max-w-md p-6">
-			<h1 className="mb-6 text-center font-bold text-3xl">Welcome Back</h1>
+		<div className="flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+			<div className="flex flex-col space-y-2 text-center">
+				<h1 className="font-semibold text-2xl tracking-tight">
+					Login to your account
+				</h1>
+				<p className="text-muted-foreground text-sm">
+					Enter your credentials to access the system
+				</p>
+			</div>
 
 			<form
 				onSubmit={(e) => {
@@ -60,64 +71,99 @@ export default function SignInForm() {
 				}}
 				className="space-y-4"
 			>
-				<div>
+				<div className="grid gap-2">
 					<form.Field name="email">
 						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>Email</Label>
+							<div className="grid gap-1">
+								<Label htmlFor="email">Email</Label>
 								<Input
-									id={field.name}
-									name={field.name}
+									id="email"
+									placeholder="name@example.com"
 									type="email"
+									autoCapitalize="none"
+									autoComplete="email"
+									autoCorrect="off"
+									disabled={isPending}
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className={
+										field.state.meta.errors.length ? "border-red-500" : ""
+									}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-red-500 text-xs">
 										{error?.message}
 									</p>
 								))}
 							</div>
 						)}
 					</form.Field>
-				</div>
 
-				<div>
 					<form.Field name="password">
 						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
+							<div className="grid gap-1">
+								<div className="flex items-center justify-between">
+									<Label htmlFor="password">Password</Label>
+									<a
+										href="/forgot-password"
+										className="font-medium text-muted-foreground text-xs hover:text-primary"
+									>
+										Forgot password?
+									</a>
+								</div>
 								<Input
-									id={field.name}
-									name={field.name}
+									id="password"
+									placeholder="••••••••"
 									type="password"
+									autoCapitalize="none"
+									autoComplete="current-password"
+									disabled={isPending}
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									className={
+										field.state.meta.errors.length ? "border-red-500" : ""
+									}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-red-500 text-xs">
 										{error?.message}
 									</p>
 								))}
 							</div>
 						)}
 					</form.Field>
-				</div>
 
-				<form.Subscribe>
-					{(state) => (
-						<Button
-							type="submit"
-							className="w-full"
-							disabled={!state.canSubmit || state.isSubmitting}
-						>
-							{state.isSubmitting ? "Submitting..." : "Sign In"}
-						</Button>
-					)}
-				</form.Subscribe>
+					<form.Subscribe>
+						{(state) => (
+							<Button
+								type="submit"
+								className="mt-2 w-full"
+								disabled={!state.canSubmit || state.isSubmitting || isPending}
+							>
+								{(state.isSubmitting || isPending) && (
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								)}
+								Sign In
+							</Button>
+						)}
+					</form.Subscribe>
+				</div>
 			</form>
+
+			{onSwitchToSignUp && (
+				<div className="text-center text-muted-foreground text-sm">
+					Don&apos;t have an account?{" "}
+					<button
+						type="button"
+						onClick={onSwitchToSignUp}
+						className="underline underline-offset-4 hover:text-primary"
+					>
+						Sign up
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }

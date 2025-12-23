@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Use vi.hoisted to define the mock procedure factory before vi.mock runs
 const { createMockProcedure } = vi.hoisted(() => {
 	const createMockProcedure = () => {
-		const mockProcedure: any = {
+		const mockProcedure = {
 			input: vi.fn(() => mockProcedure),
 			handler: vi.fn(() => mockProcedure),
 			use: vi.fn(() => mockProcedure),
