@@ -1,15 +1,37 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
 
 import type { authClient } from "@/lib/auth-client";
-import { orpc } from "@/utils/orpc";
+import AdminDashboard from "./components/admin-dashboard";
+import RegionalDirectorDashboard from "./components/regional-director-dashboard";
+import RLMDashboard from "./components/rlm-dashboard";
+import StationCommanderDashboard from "./components/station-commander-dashboard";
+import SupplyOfficerDashboard from "./components/supply-officer-dashboard";
 
 export default function Dashboard({
-	_session,
+	session,
 }: {
-	_session: typeof authClient.$Infer.Session;
+	session: typeof authClient.$Infer.Session;
 }) {
-	const privateData = useQuery(orpc.privateData.queryOptions());
+	// biome-ignore lint/suspicious/noExplicitAny: role property missing in inferred types
+	const role = (session.user as any).role;
 
-	return <p>API: {privateData.data?.message}</p>;
+	switch (role) {
+		case "supply-officer":
+			return <SupplyOfficerDashboard />;
+		case "station-commander":
+			return <StationCommanderDashboard session={session} />;
+		case "regional-logistics-manager":
+			return <RLMDashboard session={session} />;
+		case "regional-director":
+			return <RegionalDirectorDashboard session={session} />;
+		case "regional-admin":
+			return <AdminDashboard session={session} />;
+		default:
+			return (
+				<div className="p-4">
+					<h1 className="font-bold text-2xl">Unknown Role</h1>
+					<p>Your role ({role}) does not have a dashboard configured.</p>
+				</div>
+			);
+	}
 }

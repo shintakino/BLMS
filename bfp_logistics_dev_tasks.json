@@ -132,6 +132,12 @@
 		"status": "done"
 	},
 	{
+		"id": "T-042",
+		"category": "Inventory",
+		"task": "Implement inventory.listAll for Regional roles",
+		"status": "done"
+	},
+	{
 		"id": "T-050",
 		"category": "UI",
 		"task": "Build login page",
@@ -141,19 +147,31 @@
 		"id": "T-051",
 		"category": "UI",
 		"task": "Build dashboard per role",
-		"status": "pending"
+		"status": "done"
 	},
 	{
 		"id": "T-052",
 		"category": "UI",
 		"task": "Build request creation UI",
-		"status": "pending"
+		"status": "done"
 	},
 	{
 		"id": "T-053",
 		"category": "UI",
 		"task": "Build approval screens",
-		"status": "pending"
+		"status": "done"
+	},
+	{
+		"id": "T-054",
+		"category": "UI",
+		"task": "Build Inventory UI for Station Commander (View Only)",
+		"status": "done"
+	},
+	{
+		"id": "T-055",
+		"category": "UI",
+		"task": "Build Inventory UI for Regional roles (All Stations)",
+		"status": "done"
 	},
 	{
 		"id": "T-060",

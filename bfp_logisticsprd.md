@@ -98,6 +98,18 @@ Region
 
 ---
 
+## 5.2 Inventory Management
+
+#### FR-05 Station Inventory Visibility
+- **Station Commander**: Can view full inventory list of their own station.
+- **Supply Officer**: Can view and manage (add/edit) inventory of their own station.
+
+#### FR-06 Regional Inventory Visibility
+- **Regional Logistics Manager (RLM)**: Can view inventory of **ALL** stations in the region.
+- **Regional Director**: Can view inventory of **ALL** stations in the region.
+
+---
+
 ## 6. Approval Workflow (Final)
 
 ```
@@ -143,17 +155,22 @@ Regional Director (Final Approval)
 ### Regional Director
 - As a Director, I can approve or reject requests.
 - **Acceptance:** Approval triggers audit log and notifications.
+- As a Director, I can view inventory levels across all stations to make informed approval decisions.
+
+### Inventory Visibility
+- **Station Commander**: "I can see my station's current stock to validate if a request is truly needed."
+- **RLM**: "I can see stock levels of all stations to identify surplus or shortages before approving procurement."
 
 ---
 
 ## 9. Permission Matrix
 
-| Role | Create | Validate | Consolidate | Approve |
-|------|--------|----------|-------------|---------|
-| Supply Officer | ✅ | ❌ | ❌ | ❌ |
-| Station Commander | ❌ | ✅ | ❌ | ❌ |
-| RLM | ❌ | ❌ | ✅ | ❌ |
-| Regional Director | ❌ | ❌ | ❌ | ✅ |
+| Role | Create Request | Validate Request | Consolidate Request | Approve Request | View Own Inventory | View All Inventory |
+|------|----------------|------------------|---------------------|-----------------|--------------------|--------------------|
+| Supply Officer | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Station Commander | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| RLM | ❌ | ❌ | ✅ | ❌ | ✅ (n/a) | ✅ |
+| Regional Director | ❌ | ❌ | ❌ | ✅ | ✅ (n/a) | ✅ |
 
 ---
 

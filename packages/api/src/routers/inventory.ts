@@ -7,19 +7,33 @@ import {
 	protectedProcedure,
 	stationCommanderProcedure,
 	supplyOfficerProcedure,
-} from "../index";
+} from "../procedures";
 
 export const inventoryRouter = {
 	// List all inventory and assets for a station
 	list: protectedProcedure
 		.input(
 			z.object({
-				stationId: z.string().optional(), // Optional: defaults to user's station
+				stationId: z.string().optional(),
 			}),
 		)
 		.handler(async ({ input, context }) => {
 			const { user } = context.session;
-			const targetStationId = input.stationId || user.stationId;
+			const isRegional =
+				user.role &&
+				[
+					"regional-logistics-manager",
+					"regional-director",
+					"regional-admin",
+				].includes(user.role);
+
+			// For station users, ALWAYS force their own station ID
+			// For regional users, use input station ID, or error if missing
+			let targetStationId = input.stationId;
+
+			if (!isRegional) {
+				targetStationId = user.stationId || undefined;
+			}
 
 			if (!targetStationId) {
 				throw new ORPCError("BAD_REQUEST", {
@@ -27,12 +41,26 @@ export const inventoryRouter = {
 				});
 			}
 
+			// Extra check: if station user tries to access another station (should be caught by logic above, but explicitly)
+			if (!isRegional && targetStationId !== user.stationId) {
+				// This condition is actually impossible given the logic above, but good for sanity
+				throw new ORPCError("FORBIDDEN", {
+					message: "You can only view your own station's inventory.",
+				});
+			}
+
 			const inventoryItems = await db.query.inventory.findMany({
 				where: eq(inventory.stationId, targetStationId),
+				with: {
+					station: true,
+				},
 			});
 
 			const stationAssets = await db.query.assets.findMany({
 				where: eq(assets.stationId, targetStationId),
+				with: {
+					station: true,
+				},
 			});
 
 			return {
@@ -40,6 +68,41 @@ export const inventoryRouter = {
 				assets: stationAssets,
 			};
 		}),
+
+	// List ALL inventory and assets (Regional Only)
+	listAll: protectedProcedure.handler(async ({ context }) => {
+		const { user } = context.session;
+		const isRegional =
+			user.role &&
+			[
+				"regional-logistics-manager",
+				"regional-director",
+				"regional-admin",
+			].includes(user.role);
+
+		if (!isRegional) {
+			throw new ORPCError("FORBIDDEN", {
+				message: "Only regional roles can view all inventory.",
+			});
+		}
+
+		const inventoryItems = await db.query.inventory.findMany({
+			with: {
+				station: true,
+			},
+		});
+
+		const allAssets = await db.query.assets.findMany({
+			with: {
+				station: true,
+			},
+		});
+
+		return {
+			inventory: inventoryItems,
+			assets: allAssets,
+		};
+	}),
 
 	// Add or update inventory item (upsert by station + itemName)
 	upsertInventory: supplyOfficerProcedure
@@ -60,10 +123,12 @@ export const inventoryRouter = {
 				});
 			}
 
+			const stationId = user.stationId;
+
 			// Check if item exists
 			const existing = await db.query.inventory.findFirst({
 				where: and(
-					eq(inventory.stationId, user.stationId),
+					eq(inventory.stationId, stationId),
 					eq(inventory.itemName, input.itemName),
 				),
 			});
@@ -87,7 +152,7 @@ export const inventoryRouter = {
 				.insert(inventory)
 				.values({
 					id: crypto.randomUUID(),
-					stationId: user.stationId,
+					stationId: stationId,
 					itemName: input.itemName,
 					category: input.category,
 					quantity: input.quantity,
@@ -121,6 +186,8 @@ export const inventoryRouter = {
 				});
 			}
 
+			const stationId = user.stationId;
+
 			// Check for duplicate serial number (if provided)
 			if (input.serialNumber) {
 				const existingAsset = await db.query.assets.findFirst({
@@ -138,7 +205,7 @@ export const inventoryRouter = {
 				.insert(assets)
 				.values({
 					id: crypto.randomUUID(),
-					stationId: user.stationId,
+					stationId: stationId,
 					name: input.name,
 					serialNumber: input.serialNumber,
 					category: input.category,
@@ -194,6 +261,14 @@ export const inventoryRouter = {
 		.handler(async ({ input, context }) => {
 			const { user } = context.session;
 
+			if (!user.stationId) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "User is not assigned to a station.",
+				});
+			}
+
+			const stationId = user.stationId;
+
 			const asset = await db.query.assets.findFirst({
 				where: eq(assets.id, input.assetId),
 			});
@@ -202,7 +277,7 @@ export const inventoryRouter = {
 				throw new ORPCError("NOT_FOUND", { message: "Asset not found" });
 			}
 
-			if (asset.stationId !== user.stationId) {
+			if (asset.stationId !== stationId) {
 				throw new ORPCError("FORBIDDEN", {
 					message: "You can only transfer assets from your own station.",
 				});
@@ -233,7 +308,7 @@ export const inventoryRouter = {
 				.values({
 					id: crypto.randomUUID(),
 					assetId: input.assetId,
-					fromStationId: user.stationId as string,
+					fromStationId: stationId,
 					toStationId: input.toStationId,
 					requestedBy: user.id,
 					remarks: input.remarks,

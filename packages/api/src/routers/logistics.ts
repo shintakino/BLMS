@@ -4,13 +4,57 @@ import { ORPCError } from "@orpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import {
+	protectedProcedure,
 	regionalDirectorProcedure,
 	rlmProcedure,
 	stationCommanderProcedure,
 	supplyOfficerProcedure,
-} from "../index";
+} from "../procedures";
 
 export const logisticsRouter = {
+	list: protectedProcedure
+		.input(
+			z
+				.object({
+					status: z
+						.enum([
+							"DRAFT",
+							"SUBMITTED",
+							"VALIDATED",
+							"REJECTED",
+							"REVIEWED",
+							"APPROVED",
+						])
+						.optional(),
+					stationId: z.string().optional(),
+				})
+				.optional(),
+		)
+		.handler(async ({ input, context }) => {
+			const { user } = context.session;
+
+			// Actually, refining the query construction:
+			return await db.query.requests.findMany({
+				where: (requests, { eq, and }) => {
+					const conditions = [];
+					if (input?.status) conditions.push(eq(requests.status, input.status));
+
+					if (
+						user.role === "supply-officer" ||
+						user.role === "station-commander"
+					) {
+						conditions.push(eq(requests.stationId, user.stationId || ""));
+					} else if (input?.stationId) {
+						conditions.push(eq(requests.stationId, input.stationId));
+					}
+
+					return conditions.length > 0 ? and(...conditions) : undefined;
+				},
+				orderBy: (requests, { desc }) => [desc(requests.createdAt)],
+				// with: { items: true } // valid if we need items
+			});
+		}),
+
 	create: supplyOfficerProcedure
 		.input(
 			z.object({

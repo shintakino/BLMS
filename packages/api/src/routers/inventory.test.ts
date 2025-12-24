@@ -70,6 +70,10 @@ describe("Inventory Router Structure", () => {
 	it("should have completeTransfer procedure", () => {
 		expect(inventoryRouter).toHaveProperty("completeTransfer");
 	});
+
+	it("should have listAll procedure", () => {
+		expect(inventoryRouter).toHaveProperty("listAll");
+	});
 });
 
 describe("Inventory Router RBAC Documentation", () => {
