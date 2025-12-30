@@ -102,7 +102,7 @@ Region
 
 #### FR-05 Station Inventory Visibility
 - **Station Commander**: Can view full inventory list of their own station.
-- **Supply Officer**: Can view and manage (add/edit) inventory of their own station.
+- **Supply Officer**: Can view and manage (add/edit items, update asset status with confirmation) inventory of their own station.
 
 #### FR-06 Regional Inventory Visibility
 - **Regional Logistics Manager (RLM)**: Can view inventory of **ALL** stations in the region.
@@ -165,12 +165,12 @@ Regional Director (Final Approval)
 
 ## 9. Permission Matrix
 
-| Role | Create Request | Validate Request | Consolidate Request | Approve Request | View Own Inventory | View All Inventory |
-|------|----------------|------------------|---------------------|-----------------|--------------------|--------------------|
-| Supply Officer | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Station Commander | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| RLM | ❌ | ❌ | ✅ | ❌ | ✅ (n/a) | ✅ |
-| Regional Director | ❌ | ❌ | ❌ | ✅ | ✅ (n/a) | ✅ |
+| Role | Create Request | Validate Request | Consolidate Request | Approve Request | View Own Inventory | Update Asset Status | View All Inventory |
+|------|----------------|------------------|---------------------|-----------------|--------------------|---------------------|--------------------|
+| Supply Officer | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Station Commander | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| RLM | ❌ | ❌ | ✅ | ❌ | ✅ (n/a) | ❌ | ✅ |
+| Regional Director | ❌ | ❌ | ❌ | ✅ | ✅ (n/a) | ❌ | ✅ |
 
 ---
 

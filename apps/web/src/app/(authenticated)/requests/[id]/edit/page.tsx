@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { use } from "react";
 
 import RequestForm from "@/components/request-form";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,8 @@
 import type { RouterClient } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../procedures";
+import { adminRouter } from "./admin";
+import { auditRouter } from "./audit";
 import { inventoryRouter } from "./inventory";
 import { logisticsRouter } from "./logistics";
 
@@ -14,6 +16,8 @@ export const appRouter = {
 			user: context.session?.user,
 		};
 	}),
+	admin: adminRouter,
+	audit: auditRouter,
 	logistics: logisticsRouter,
 	inventory: inventoryRouter,
 };

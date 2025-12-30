@@ -1,10 +1,16 @@
-import { eq } from "drizzle-orm";
-import stationsData from "../../../bfp_stations.json";
-import { db } from "./index";
+import dotenv from "dotenv";
 
-import { cities, provinces, regions, stations } from "./schema/geo";
+dotenv.config({
+	path: "../../apps/web/.env",
+});
 
-async function seed() {
+async function main() {
+	// Dynamic imports to ensure dotenv loads first
+	const { eq } = await import("drizzle-orm");
+	const stationsData = (await import("../../../bfp_stations.json")).default;
+	const { db } = await import("./index");
+	const { cities, provinces, regions, stations } = await import("./schema/geo");
+
 	console.log("🌱 Starting seeding...");
 
 	try {
@@ -65,7 +71,15 @@ async function seed() {
 				for (const city of prov.cities) {
 					if (!provinceId)
 						throw new Error(`Province ID missing for ${prov.name}`);
-					await seedCityAndStations(city.name, city.stations, provinceId);
+					await seedCityAndStations(
+						db,
+						eq,
+						cities,
+						stations,
+						city.name,
+						city.stations,
+						provinceId,
+					);
 				}
 			}
 
@@ -74,7 +88,15 @@ async function seed() {
 				for (const mun of prov.municipalities) {
 					if (!provinceId)
 						throw new Error(`Province ID missing for ${prov.name}`);
-					await seedCityAndStations(mun.name, mun.stations, provinceId);
+					await seedCityAndStations(
+						db,
+						eq,
+						cities,
+						stations,
+						mun.name,
+						mun.stations,
+						provinceId,
+					);
 				}
 			}
 		}
@@ -89,6 +111,14 @@ async function seed() {
 }
 
 async function seedCityAndStations(
+	// biome-ignore lint/suspicious/noExplicitAny: Dynamic module types
+	db: any,
+	// biome-ignore lint/suspicious/noExplicitAny: Dynamic module types
+	eq: any,
+	// biome-ignore lint/suspicious/noExplicitAny: Dynamic module types
+	cities: any,
+	// biome-ignore lint/suspicious/noExplicitAny: Dynamic module types
+	stations: any,
 	cityName: string,
 	stationNames: string[],
 	provinceId: string,
@@ -135,4 +165,4 @@ async function seedCityAndStations(
 	}
 }
 
-seed();
+main();

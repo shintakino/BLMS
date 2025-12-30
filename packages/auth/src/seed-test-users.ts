@@ -1,10 +1,17 @@
-import { db } from "@BLMS/db";
-import { user } from "@BLMS/db/schema/auth";
-import { stations } from "@BLMS/db/schema/geo";
-import { eq } from "drizzle-orm";
-import { auth } from "./index";
+import dotenv from "dotenv";
+
+dotenv.config({
+	path: "../../apps/web/.env",
+});
 
 async function seedUsers() {
+	// Dynamic imports to ensure dotenv loads first
+	const { db } = await import("@BLMS/db");
+	const { user } = await import("@BLMS/db/schema/auth");
+	const { stations } = await import("@BLMS/db/schema/geo");
+	const { eq } = await import("drizzle-orm");
+	const { auth } = await import("./index");
+
 	console.log("🌱 Starting User Seeding...");
 
 	const usersToCreate = [

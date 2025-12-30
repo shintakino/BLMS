@@ -10,7 +10,8 @@
 		}
 	},
 	"scripts": {
-		"seed:users": "tsx src/seed-test-users.ts"
+		"seed:users": "tsx src/seed-test-users.ts",
+		"seed:supply-officer": "tsx src/seed-supply-officer-data.ts"
 	},
 	"devDependencies": {
 		"@BLMS/config": "*",

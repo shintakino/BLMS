@@ -1,18 +1,28 @@
 import { db } from "@BLMS/db";
 import * as schema from "@BLMS/db/schema/auth";
 import { expo } from "@better-auth/expo";
-import { betterAuth } from "better-auth";
+import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
 import nodemailer from "nodemailer";
 
-export const auth = betterAuth({
+const config = {
 	database: drizzleAdapter(db, {
 		provider: "pg",
-
 		schema: schema,
 	}),
+	session: {
+		// Session expires after 30 days (in seconds)
+		expiresIn: 60 * 60 * 24 * 30, // 30 days
+		// Refresh session expiration every 12 hours of activity
+		updateAge: 60 * 60 * 12, // 12 hours
+		// Enable cookie caching for better performance
+		cookieCache: {
+			enabled: false,
+			maxAge: 60 * 5, // 5 minutes cache
+		},
+	},
 	user: {
 		additionalFields: {
 			mustChangePassword: {
@@ -41,7 +51,7 @@ export const auth = betterAuth({
 	trustedOrigins: [process.env.CORS_ORIGIN || "", "mybettertapp://", "exp://"],
 	emailAndPassword: {
 		enabled: true,
-		async sendResetPassword(data) {
+		async sendResetPassword(data: { user: { email: string }; url: string }) {
 			const transporter = nodemailer.createTransport({
 				service: "gmail",
 				auth: {
@@ -59,5 +69,14 @@ export const auth = betterAuth({
 			});
 		},
 	},
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth({
+	...config,
 	plugins: [nextCookies(), expo()],
+});
+
+export const programmaticAuth = betterAuth({
+	...config,
+	plugins: [],
 });

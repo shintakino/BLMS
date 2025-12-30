@@ -3,6 +3,7 @@ import { assets, assetTransfers, inventory } from "@BLMS/db/schema/inventory";
 import { ORPCError } from "@orpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { logAudit } from "../lib/audit";
 import {
 	protectedProcedure,
 	stationCommanderProcedure,
@@ -15,6 +16,51 @@ export const inventoryRouter = {
 		.input(
 			z.object({
 				stationId: z.string().optional(),
+			}),
+		)
+		.output(
+			z.object({
+				inventory: z.array(
+					z.object({
+						id: z.string(),
+						stationId: z.string(),
+						itemName: z.string(),
+						category: z.string(),
+						quantity: z.number(),
+						unit: z.string().nullable(),
+						createdAt: z.date(),
+						updatedAt: z.date(),
+						station: z.object({
+							id: z.string(),
+							name: z.string(),
+							cityId: z.string(),
+							provinceId: z.string(),
+							createdAt: z.date(),
+							updatedAt: z.date(),
+						}),
+					}),
+				),
+				assets: z.array(
+					z.object({
+						id: z.string(),
+						stationId: z.string(),
+						name: z.string(),
+						serialNumber: z.string().nullable(),
+						category: z.string(),
+						status: z.enum(["GOOD", "REPAIR", "DISPOSED", "LOST"]),
+						acquiredAt: z.date().nullable(),
+						createdAt: z.date(),
+						updatedAt: z.date(),
+						station: z.object({
+							id: z.string(),
+							name: z.string(),
+							cityId: z.string(),
+							provinceId: z.string(),
+							createdAt: z.date(),
+							updatedAt: z.date(),
+						}),
+					}),
+				),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -70,48 +116,100 @@ export const inventoryRouter = {
 		}),
 
 	// List ALL inventory and assets (Regional Only)
-	listAll: protectedProcedure.handler(async ({ context }) => {
-		const { user } = context.session;
-		const isRegional =
-			user.role &&
-			[
-				"regional-logistics-manager",
-				"regional-director",
-				"regional-admin",
-			].includes(user.role);
+	listAll: protectedProcedure
+		.output(
+			z.object({
+				inventory: z.array(
+					z.object({
+						id: z.string(),
+						stationId: z.string(),
+						itemName: z.string(),
+						category: z.string(),
+						quantity: z.number(),
+						unit: z.string().nullable(),
+						createdAt: z.date(),
+						updatedAt: z.date(),
+						station: z.object({
+							id: z.string(),
+							name: z.string(),
+							cityId: z.string(),
+							provinceId: z.string(),
+							createdAt: z.date(),
+							updatedAt: z.date(),
+						}),
+					}),
+				),
+				assets: z.array(
+					z.object({
+						id: z.string(),
+						stationId: z.string(),
+						name: z.string(),
+						serialNumber: z.string().nullable(),
+						category: z.string(),
+						status: z.enum(["GOOD", "REPAIR", "DISPOSED", "LOST"]),
+						acquiredAt: z.date().nullable(),
+						createdAt: z.date(),
+						updatedAt: z.date(),
+						station: z.object({
+							id: z.string(),
+							name: z.string(),
+							cityId: z.string(),
+							provinceId: z.string(),
+							createdAt: z.date(),
+							updatedAt: z.date(),
+						}),
+					}),
+				),
+			}),
+		)
+		.handler(async ({ context }) => {
+			const { user } = context.session;
+			const isRegional =
+				user.role &&
+				[
+					"regional-logistics-manager",
+					"regional-director",
+					"regional-admin",
+				].includes(user.role);
 
-		if (!isRegional) {
-			throw new ORPCError("FORBIDDEN", {
-				message: "Only regional roles can view all inventory.",
+			if (!isRegional) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "Only regional roles can view all inventory.",
+				});
+			}
+
+			const inventoryItems = await db.query.inventory.findMany({
+				with: {
+					station: true,
+				},
 			});
-		}
 
-		const inventoryItems = await db.query.inventory.findMany({
-			with: {
-				station: true,
-			},
-		});
+			const allAssets = await db.query.assets.findMany({
+				with: {
+					station: true,
+				},
+			});
 
-		const allAssets = await db.query.assets.findMany({
-			with: {
-				station: true,
-			},
-		});
+			return {
+				inventory: inventoryItems,
+				assets: allAssets,
+			};
+		}),
 
-		return {
-			inventory: inventoryItems,
-			assets: allAssets,
-		};
-	}),
-
-	// Add or update inventory item (upsert by station + itemName)
-	upsertInventory: supplyOfficerProcedure
+	// Create new inventory item (Supply Officer only)
+	createItem: supplyOfficerProcedure
 		.input(
 			z.object({
 				itemName: z.string(),
 				category: z.string(),
 				quantity: z.number().int(),
 				unit: z.string().optional(),
+			}),
+		)
+		.output(
+			z.object({
+				success: z.boolean(),
+				id: z.string(),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -134,17 +232,9 @@ export const inventoryRouter = {
 			});
 
 			if (existing) {
-				// Update quantity
-				await db
-					.update(inventory)
-					.set({
-						quantity: input.quantity,
-						category: input.category,
-						unit: input.unit,
-					})
-					.where(eq(inventory.id, existing.id));
-
-				return { success: true, action: "updated", id: existing.id };
+				throw new ORPCError("CONFLICT", {
+					message: "Item with this name already exists in your station.",
+				});
 			}
 
 			// Create new item
@@ -160,11 +250,94 @@ export const inventoryRouter = {
 				})
 				.returning();
 
+			const newItem = insertedItems[0];
+			if (!newItem) return { success: false, id: "" };
+
+			// Log creation
+			await logAudit({
+				userId: user.id,
+				action: "INVENTORY_CREATE",
+				entity: "inventory",
+				entityId: newItem.id,
+				details: {
+					itemName: input.itemName,
+					initialQuantity: input.quantity,
+				},
+			});
+
 			return {
 				success: true,
-				action: "created",
-				id: insertedItems[0]?.id,
+				id: newItem.id,
 			};
+		}),
+
+	// Adjust Stock (Stock In / Stock Out)
+	adjustStock: supplyOfficerProcedure
+		.input(
+			z.object({
+				itemId: z.string(),
+				adjustment: z.number().int(), // Positive or negative
+				reason: z.string(),
+				reference: z.string().optional(), // e.g. "DR#123"
+			}),
+		)
+		.output(
+			z.object({
+				success: z.boolean(),
+				newQuantity: z.number(),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			const { user } = context.session;
+
+			if (!user.stationId) {
+				throw new ORPCError("BAD_REQUEST", { message: "No station assigned" });
+			}
+
+			const item = await db.query.inventory.findFirst({
+				where: eq(inventory.id, input.itemId),
+			});
+
+			if (!item) {
+				throw new ORPCError("NOT_FOUND", { message: "Item not found" });
+			}
+
+			if (item.stationId !== user.stationId) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "You can only adjust your own station's inventory",
+				});
+			}
+
+			const newQuantity = item.quantity + input.adjustment;
+
+			if (newQuantity < 0) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Insufficient stock for this adjustment.",
+				});
+			}
+
+			// Update quantity
+			await db
+				.update(inventory)
+				.set({ quantity: newQuantity, updatedAt: new Date() })
+				.where(eq(inventory.id, input.itemId));
+
+			// Log audit
+			await logAudit({
+				userId: user.id,
+				action: input.adjustment > 0 ? "STOCK_IN" : "STOCK_OUT",
+				entity: "inventory",
+				entityId: item.id,
+				details: {
+					previous: item.quantity,
+					adjustment: input.adjustment,
+					new: newQuantity,
+					reason: input.reason,
+					reference: input.reference,
+				},
+			});
+
+			return { success: true, newQuantity };
 		}),
 
 	// Create a new asset
@@ -175,6 +348,22 @@ export const inventoryRouter = {
 				serialNumber: z.string().optional(),
 				category: z.string(),
 				acquiredAt: z.string().datetime().optional(),
+			}),
+		)
+		.output(
+			z.object({
+				success: z.boolean(),
+				asset: z.object({
+					id: z.string(),
+					stationId: z.string(),
+					name: z.string(),
+					serialNumber: z.string().nullable(),
+					category: z.string(),
+					status: z.enum(["GOOD", "REPAIR", "DISPOSED", "LOST"]),
+					acquiredAt: z.date().nullable(),
+					createdAt: z.date(),
+					updatedAt: z.date(),
+				}),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -213,14 +402,40 @@ export const inventoryRouter = {
 				})
 				.returning();
 
-			return { success: true, asset: insertedAssets[0] };
+			const newAsset = insertedAssets[0];
+			if (!newAsset) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to create asset",
+				});
+			}
+
+			// Log creation
+			await logAudit({
+				userId: user.id,
+				action: "ASSET_CREATE",
+				entity: "asset",
+				entityId: newAsset.id,
+				details: {
+					name: input.name,
+					serialNumber: input.serialNumber,
+					category: input.category,
+				},
+			});
+
+			return { success: true, asset: newAsset };
 		}),
 
 	// Update asset status
-	updateAssetStatus: stationCommanderProcedure
+	updateAssetStatus: supplyOfficerProcedure
 		.input(
 			z.object({
 				assetId: z.string(),
+				status: z.enum(["GOOD", "REPAIR", "DISPOSED", "LOST"]),
+			}),
+		)
+		.output(
+			z.object({
+				success: z.boolean(),
 				status: z.enum(["GOOD", "REPAIR", "DISPOSED", "LOST"]),
 			}),
 		)
@@ -256,6 +471,23 @@ export const inventoryRouter = {
 				assetId: z.string(),
 				toStationId: z.string(),
 				remarks: z.string().optional(),
+			}),
+		)
+		.output(
+			z.object({
+				success: z.boolean(),
+				transfer: z.object({
+					id: z.string(),
+					assetId: z.string(),
+					fromStationId: z.string(),
+					toStationId: z.string(),
+					status: z.enum(["PENDING", "APPROVED", "COMPLETED", "CANCELLED"]),
+					requestedBy: z.string(),
+					approvedBy: z.string().nullable(),
+					remarks: z.string().nullable(),
+					createdAt: z.date(),
+					updatedAt: z.date(),
+				}),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -315,7 +547,14 @@ export const inventoryRouter = {
 				})
 				.returning();
 
-			return { success: true, transfer: insertedTransfers[0] };
+			const newTransfer = insertedTransfers[0];
+			if (!newTransfer) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to create transfer",
+				});
+			}
+
+			return { success: true, transfer: newTransfer };
 		}),
 
 	// Complete/Accept asset transfer (receiving station commander)
@@ -324,6 +563,12 @@ export const inventoryRouter = {
 			z.object({
 				transferId: z.string(),
 				action: z.enum(["COMPLETE", "CANCEL"]),
+			}),
+		)
+		.output(
+			z.object({
+				success: z.boolean(),
+				status: z.string(),
 			}),
 		)
 		.handler(async ({ input, context }) => {
