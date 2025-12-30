@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-
+import { AddAssetDialog } from "@/components/inventory/add-asset-dialog";
+import { AddItemDialog } from "@/components/inventory/add-item-dialog";
+import { AdjustStockDialog } from "@/components/inventory/adjust-stock-dialog";
+import { AssetActions } from "@/components/inventory/asset-actions";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -14,7 +17,14 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
 	Table,
 	TableBody,
@@ -23,6 +33,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { authClient } from "@/lib/auth-client";
 import { client } from "@/utils/orpc";
 // We will retrieve user role from client-side session or assume it's passed/available contextually
 // For this page, we might need to fetch the session client side if not passed as prop,
@@ -62,40 +73,35 @@ interface InventoryItem {
 }
 
 function InventoryView() {
-	// Attempt to fetch as Station user first (since typical user count > regional count)
-	// Actually, we can just use two queries and see which one is enabled/returns data?
-	// Or better: use the auth hook properly.
+	// Use session to determine user role and call appropriate endpoint
+	const { data: session, isPending: isSessionPending } =
+		authClient.useSession();
 
-	// Let's rely on the fact that `listAll` is for regional, `list` is for station.
-	// We will try `listAll` first? No, that throws FORBIDDEN for station.
-	// We need to know the role...
-	// Let's implement a role-agnostic loader or just fetch `list` (which works for station) and catch error?
-	// But `list` forces stationId for station user.
-	// Wait, Region users can ALSO use `list` if they provide stationId.
-	// `listAll` is special.
+	// biome-ignore lint/suspicious/noExplicitAny: role exists but not in inferred type
+	const userRole = (session?.user as any)?.role;
+	const isRegional =
+		userRole &&
+		[
+			"regional-logistics-manager",
+			"regional-director",
+			"regional-admin",
+		].includes(userRole);
 
-	// Implementation Strategy:
-	// We'll use a client-side role check from `useSession` if available, or just try to load `listAll`.
-	// Since we don't have convenient `useSession` imported here easily without setting up context,
-	// let's try `listAll` query. If it errors (FORBIDDEN), we fall back to `list`.
-
-	const {
-		data: regionalData,
-		isError: isRegionalError,
-		isLoading: isRegionalLoading,
-	} = useQuery({
+	// Fetch regional data only if user is regional
+	const { data: regionalData, isLoading: isRegionalLoading } = useQuery({
 		queryKey: ["inventory", "all"],
 		queryFn: () => client.inventory.listAll(),
-		retry: false, // Don't retry if forbidden
+		enabled: isRegional === true,
 	});
 
+	// Fetch station data only if user is NOT regional
 	const { data: stationData, isLoading: isStationLoading } = useQuery({
 		queryKey: ["inventory", "station"],
 		queryFn: () => client.inventory.list({}),
-		enabled: isRegionalError, // Only fetch this if regional failed (likely forbidden)
+		enabled: isRegional === false,
 	});
 
-	if (isRegionalLoading) {
+	if (isSessionPending) {
 		return (
 			<div className="flex justify-center p-8">
 				<Loader2 className="h-8 w-8 animate-spin" />
@@ -103,11 +109,19 @@ function InventoryView() {
 		);
 	}
 
-	if (!isRegionalError && regionalData) {
+	if (isRegional && isRegionalLoading) {
+		return (
+			<div className="flex justify-center p-8">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
+
+	if (isRegional && regionalData) {
 		return <RegionalInventoryTable data={regionalData} />;
 	}
 
-	if (isStationLoading) {
+	if (!isRegional && isStationLoading) {
 		return (
 			<div className="flex justify-center p-8">
 				<Loader2 className="h-8 w-8 animate-spin" />
@@ -115,7 +129,7 @@ function InventoryView() {
 		);
 	}
 
-	if (stationData) {
+	if (!isRegional && stationData) {
 		return <StationInventoryTable data={stationData} />;
 	}
 
@@ -143,12 +157,26 @@ function RegionalInventoryTable({ data }: { data: any }) {
 		stationName: item.station?.name || "Unknown",
 	}));
 
+	const [page, setPage] = useState(1);
+	const ITEMS_PER_PAGE = 10;
+
 	const allItems = [...inventoryItems, ...assets].filter(
 		(item) =>
 			item.itemName.toLowerCase().includes(filter.toLowerCase()) ||
 			item.stationName.toLowerCase().includes(filter.toLowerCase()) ||
 			item.category.toLowerCase().includes(filter.toLowerCase()),
 	);
+
+	const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+	const paginatedItems = allItems.slice(
+		(page - 1) * ITEMS_PER_PAGE,
+		page * ITEMS_PER_PAGE,
+	);
+
+	// Reset page when filter changes
+	if (page > 1 && paginatedItems.length === 0 && totalPages > 0) {
+		setPage(1);
+	}
 
 	return (
 		<Card>
@@ -159,7 +187,10 @@ function RegionalInventoryTable({ data }: { data: any }) {
 					<Input
 						placeholder="Search items, stations, or categories..."
 						value={filter}
-						onChange={(e) => setFilter(e.target.value)}
+						onChange={(e) => {
+							setFilter(e.target.value);
+							setPage(1);
+						}}
 						className="max-w-sm"
 					/>
 				</div>
@@ -177,14 +208,14 @@ function RegionalInventoryTable({ data }: { data: any }) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{allItems.length === 0 ? (
+						{paginatedItems.length === 0 ? (
 							<TableRow>
 								<TableCell colSpan={6} className="text-center">
 									No items found.
 								</TableCell>
 							</TableRow>
 						) : (
-							allItems.map((item: InventoryItem) => (
+							paginatedItems.map((item: InventoryItem) => (
 								<TableRow key={item.id}>
 									<TableCell className="font-medium">
 										{item.stationName}
@@ -207,6 +238,38 @@ function RegionalInventoryTable({ data }: { data: any }) {
 						)}
 					</TableBody>
 				</Table>
+
+				{totalPages > 1 && (
+					<div className="mt-4 flex justify-center">
+						<Pagination>
+							<PaginationContent>
+								<PaginationItem>
+									<PaginationPrevious
+										className={
+											page === 1
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+										}
+										onClick={() => setPage((p) => Math.max(1, p - 1))}
+									/>
+								</PaginationItem>
+								<PaginationItem>
+									<PaginationLink>{page}</PaginationLink>
+								</PaginationItem>
+								<PaginationItem>
+									<PaginationNext
+										className={
+											page === totalPages
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+										}
+										onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+									/>
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
+					</div>
+				)}
 			</CardContent>
 		</Card>
 	);
@@ -229,15 +292,52 @@ function StationInventoryTable({ data }: { data: any }) {
 		type: "Asset",
 	}));
 
-	const allItems = [...inventoryItems, ...assets];
+	const [filter, setFilter] = useState("");
+	const [page, setPage] = useState(1);
+	const ITEMS_PER_PAGE = 10;
+
+	const allItems = [...inventoryItems, ...assets].filter(
+		(item) =>
+			item.itemName.toLowerCase().includes(filter.toLowerCase()) ||
+			item.category?.toLowerCase().includes(filter.toLowerCase()) ||
+			item.type.toLowerCase().includes(filter.toLowerCase()),
+	);
+
+	const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+	const paginatedItems = allItems.slice(
+		(page - 1) * ITEMS_PER_PAGE,
+		page * ITEMS_PER_PAGE,
+	);
+
+	// Reset page when filter changes
+	if (page > 1 && paginatedItems.length === 0 && totalPages > 0) {
+		setPage(1);
+	}
 
 	return (
 		<Card>
-			<CardHeader>
-				<CardTitle>Station Inventory</CardTitle>
-				<CardDescription>
-					Manage your station's assets and supplies.
-				</CardDescription>
+			<CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div className="space-y-1">
+					<CardTitle>Station Inventory</CardTitle>
+					<CardDescription>
+						Manage your station's assets and supplies.
+					</CardDescription>
+				</div>
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+					<Input
+						placeholder="Search items..."
+						value={filter}
+						onChange={(e) => {
+							setFilter(e.target.value);
+							setPage(1);
+						}}
+						className="w-full sm:w-[200px]"
+					/>
+					<div className="flex items-center gap-2">
+						<AddItemDialog />
+						<AddAssetDialog />
+					</div>
+				</div>
 			</CardHeader>
 			<CardContent>
 				<Table>
@@ -248,17 +348,18 @@ function StationInventoryTable({ data }: { data: any }) {
 							<TableHead>Category</TableHead>
 							<TableHead>Quantity</TableHead>
 							<TableHead>Assets Status</TableHead>
+							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{allItems.length === 0 ? (
+						{paginatedItems.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={5} className="text-center">
+								<TableCell colSpan={6} className="text-center">
 									No items found.
 								</TableCell>
 							</TableRow>
 						) : (
-							allItems.map((item: InventoryItem) => (
+							paginatedItems.map((item: InventoryItem) => (
 								<TableRow key={item.id}>
 									<TableCell className="font-medium">{item.itemName}</TableCell>
 									<TableCell>
@@ -273,11 +374,49 @@ function StationInventoryTable({ data }: { data: any }) {
 										{item.quantity} {item.unit}
 									</TableCell>
 									<TableCell>{item.status || "Good"}</TableCell>
+									<TableCell className="text-right">
+										{item.type === "Supply" && (
+											<AdjustStockDialog item={item} />
+										)}
+										{item.type === "Asset" && <AssetActions item={item} />}
+									</TableCell>
 								</TableRow>
 							))
 						)}
 					</TableBody>
 				</Table>
+
+				{totalPages > 1 && (
+					<div className="mt-4 flex justify-center">
+						<Pagination>
+							<PaginationContent>
+								<PaginationItem>
+									<PaginationPrevious
+										className={
+											page === 1
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+										}
+										onClick={() => setPage((p) => Math.max(1, p - 1))}
+									/>
+								</PaginationItem>
+								<PaginationItem>
+									<PaginationLink>{page}</PaginationLink>
+								</PaginationItem>
+								<PaginationItem>
+									<PaginationNext
+										className={
+											page === totalPages
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+										}
+										onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+									/>
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
+					</div>
+				)}
 			</CardContent>
 		</Card>
 	);

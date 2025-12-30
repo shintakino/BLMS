@@ -4,10 +4,21 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { client } from "@/utils/orpc";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import {
 	Card,
@@ -56,18 +67,61 @@ export const requestSchema = z.object({
 	items: z.array(itemSchema).min(1, "At least one item is required"),
 });
 
-export default function RequestForm() {
+interface RequestFormProps {
+	initialData?: {
+		priority: Priority;
+		justification?: string | null;
+		items: {
+			itemName: string;
+			quantity: number;
+			category: string;
+		}[];
+	};
+	requestId?: string;
+}
+
+export default function RequestForm({
+	initialData,
+	requestId,
+}: RequestFormProps) {
 	const router = useRouter();
+	const submitIntent = React.useRef<"DRAFT" | "SUBMITTED">("SUBMITTED");
+	const [confirmAction, setConfirmAction] = useState<
+		"DRAFT" | "SUBMITTED" | null
+	>(null);
 
 	// ORPC Mutation for creating request
 	const createRequest = useMutation({
 		mutationFn: (data: CreateRequestInput) => client.logistics.create(data),
-		onSuccess: () => {
-			toast.success("Request submitted successfully");
+		onSuccess: (_, variables) => {
+			toast.success(
+				variables.status === "DRAFT"
+					? "Request saved as draft"
+					: "Request submitted successfully",
+			);
 			router.push("/dashboard");
 		},
 		onError: (error: Error) => {
-			toast.error("Failed to submit request", {
+			toast.error("Failed to save request", {
+				description: error.message,
+			});
+		},
+	});
+
+	// ORPC Mutation for updating request
+	const updateRequest = useMutation({
+		mutationFn: (data: CreateRequestInput & { requestId: string }) =>
+			client.logistics.update(data),
+		onSuccess: (_, variables) => {
+			toast.success(
+				variables.status === "DRAFT"
+					? "Request draft updated"
+					: "Request submitted successfully",
+			);
+			router.push("/dashboard");
+		},
+		onError: (error: Error) => {
+			toast.error("Failed to update request", {
 				description: error.message,
 			});
 		},
@@ -75,19 +129,32 @@ export default function RequestForm() {
 
 	const form = useForm({
 		defaultValues: {
-			priority: "NORMAL" as Priority,
-			justification: "",
-			items: [
-				{ itemName: "", quantity: 1, category: "General", _id: "initial" },
-			],
+			priority: (initialData?.priority || "NORMAL") as Priority,
+			justification: initialData?.justification || "",
+			items: initialData?.items?.length
+				? initialData.items.map((item) => ({
+						...item,
+						_id: Math.random().toString(36).substring(7),
+					}))
+				: [{ itemName: "", quantity: 1, category: "General", _id: "initial" }],
 		},
 		onSubmit: async ({ value }) => {
-			await createRequest.mutateAsync({
-				priority: value.priority,
-				justification: value.justification,
-				items: value.items.map(({ _id, ...rest }) => rest),
-				status: "SUBMITTED",
-			});
+			if (requestId) {
+				await updateRequest.mutateAsync({
+					requestId,
+					priority: value.priority,
+					justification: value.justification,
+					items: value.items.map(({ _id, ...rest }) => rest),
+					status: submitIntent.current,
+				});
+			} else {
+				await createRequest.mutateAsync({
+					priority: value.priority,
+					justification: value.justification,
+					items: value.items.map(({ _id, ...rest }) => rest),
+					status: submitIntent.current,
+				});
+			}
 		},
 		validators: {
 			onChange: requestSchema,
@@ -107,7 +174,7 @@ export default function RequestForm() {
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						form.handleSubmit();
+						// Handle submit manually via confirmation
 					}}
 					className="space-y-6"
 				>
@@ -293,20 +360,75 @@ export default function RequestForm() {
 						selector={(state) => [state.canSubmit, state.isSubmitting]}
 					>
 						{([canSubmit, isSubmitting]) => (
-							<Button
-								type="submit"
-								className="w-full"
-								disabled={!canSubmit || isSubmitting}
-							>
-								{isSubmitting && (
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								)}
-								Submit Request
-							</Button>
+							<div className="flex gap-4">
+								<Button
+									type="button"
+									variant="secondary"
+									className="flex-1"
+									disabled={isSubmitting}
+									onClick={() => {
+										submitIntent.current = "DRAFT";
+										setConfirmAction("DRAFT");
+									}}
+								>
+									{isSubmitting && submitIntent.current === "DRAFT" && (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									)}
+									Save as Draft
+								</Button>
+								<Button
+									type="button"
+									className="flex-1"
+									disabled={!canSubmit || isSubmitting}
+									onClick={() => {
+										submitIntent.current = "SUBMITTED";
+										setConfirmAction("SUBMITTED");
+									}}
+								>
+									{isSubmitting && submitIntent.current === "SUBMITTED" && (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									)}
+									{requestId ? "Update & Submit" : "Submit Request"}
+								</Button>
+							</div>
 						)}
 					</form.Subscribe>
 				</form>
 			</CardContent>
+
+			<AlertDialog
+				open={!!confirmAction}
+				onOpenChange={(open) => !open && setConfirmAction(null)}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{confirmAction === "DRAFT" ? "Save as Draft?" : "Submit Request?"}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{confirmAction === "DRAFT"
+								? "You can edit this later before submitting."
+								: "This will submit the request for approval. You cannot edit it afterwards."}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								form.handleSubmit();
+								setConfirmAction(null);
+							}}
+							className={
+								confirmAction === "SUBMITTED"
+									? "bg-blue-600 hover:bg-blue-700"
+									: ""
+							}
+						>
+							{confirmAction === "DRAFT" ? "Save Draft" : "Submit"}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Card>
 	);
 }

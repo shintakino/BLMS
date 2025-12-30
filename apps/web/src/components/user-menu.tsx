@@ -40,7 +40,11 @@ export default function UserMenu() {
 				<DropdownMenuGroup>
 					<DropdownMenuLabel>My Account</DropdownMenuLabel>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+					<Link href="/dashboard" className="w-full">
+						<DropdownMenuItem className="cursor-pointer">
+							{session.user.email}
+						</DropdownMenuItem>
+					</Link>
 					<DropdownMenuItem
 						variant="destructive"
 						onClick={() => {

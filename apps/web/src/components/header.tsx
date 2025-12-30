@@ -4,18 +4,34 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import { authClient } from "@/lib/auth-client";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
 import UserMenu from "./user-menu";
 
 export default function Header() {
+	const { data: session } = authClient.useSession();
 	const pathname = usePathname();
 	const isLoginPage = pathname === "/login" || pathname === "/change-password";
 
 	// If we are on a dashboard page, we might ideally hide this header or render a different one.
 	// However, per instructions, we are treating this as the "Public/Landing" header.
 	// We will conditionally render the 'Login' button if not on login page.
+
+	// Hide header on dashboard routes to allow DashboardLayout to handle navigation
+	const authenticatedRoutes = [
+		"/dashboard",
+		"/requests",
+		"/inventory",
+		"/users",
+		"/audit",
+		"/settings",
+		"/transfers",
+		"/stations",
+	];
+	if (authenticatedRoutes.some((route) => pathname.startsWith(route))) {
+		return null;
+	}
 
 	return (
 		<motion.header
@@ -70,7 +86,7 @@ export default function Header() {
                         */}
 						<UserMenu />
 
-						{!isLoginPage && (
+						{!isLoginPage && !session && (
 							<div className="hidden md:block">
 								<Link href="/login">
 									<Button

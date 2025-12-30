@@ -12,7 +12,6 @@ import {
 	Truck,
 } from "lucide-react";
 import Link from "next/link";
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { authClient } from "@/lib/auth-client";
 
 // Ember Particle Effect Component
 const EmberParticles = () => {
@@ -77,6 +77,7 @@ const staggerContainer = {
 
 export default function LandingPage() {
 	const { scrollY } = useScroll();
+	const { data: session } = authClient.useSession();
 
 	// Parallax Effects
 	const heroBgY = useTransform(scrollY, [0, 1000], [0, 400]);
@@ -165,12 +166,12 @@ export default function LandingPage() {
 					</motion.div>
 
 					<motion.div variants={fadeInUp} className="flex justify-center gap-4">
-						<Link href="/login">
+						<Link href={session ? "/dashboard" : "/login"}>
 							<Button
 								size="lg"
 								className="bg-red-600 px-8 py-6 font-semibold text-lg shadow-red-900/20 shadow-xl transition-all hover:scale-105 hover:bg-red-700"
 							>
-								Login to System
+								{session ? "Go to Dashboard" : "Login to System"}
 								<ArrowRight className="ml-2 h-5 w-5" />
 							</Button>
 						</Link>
