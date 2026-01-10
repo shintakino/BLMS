@@ -1,7 +1,15 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, FileCheck, Gavel, Send, Trash2, X } from "lucide-react";
+import {
+	Check,
+	FileCheck,
+	Gavel,
+	Loader2,
+	Send,
+	Trash2,
+	X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -66,6 +74,7 @@ export default function RequestActions({
 }: RequestActionsProps) {
 	const router = useRouter();
 	const [remarks, setRemarks] = useState("");
+	const queryClient = useQueryClient();
 
 	// Remove activeAction state as we pass it directly
 	// const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -80,6 +89,9 @@ export default function RequestActions({
 		mutationFn: (data: ValidateInput) => client.logistics.validate(data),
 		onSuccess: () => {
 			toast.success("Request processed successfully");
+			queryClient.invalidateQueries({ queryKey: ["request", requestId] });
+			queryClient.invalidateQueries({ queryKey: ["requests"] });
+			queryClient.invalidateQueries({ queryKey: ["requests-stats"] });
 			router.refresh();
 		},
 	});
@@ -88,6 +100,9 @@ export default function RequestActions({
 		mutationFn: (data: ConsolidateInput) => client.logistics.consolidate(data),
 		onSuccess: () => {
 			toast.success("Requests consolidated successfully");
+			queryClient.invalidateQueries({ queryKey: ["request", requestId] });
+			queryClient.invalidateQueries({ queryKey: ["requests"] });
+			queryClient.invalidateQueries({ queryKey: ["requests-stats"] });
 			router.refresh();
 		},
 	});
@@ -97,11 +112,12 @@ export default function RequestActions({
 			client.logistics.finalApprove(data),
 		onSuccess: () => {
 			toast.success("Request final approved");
+			queryClient.invalidateQueries({ queryKey: ["request", requestId] });
+			queryClient.invalidateQueries({ queryKey: ["requests"] });
+			queryClient.invalidateQueries({ queryKey: ["requests-stats"] });
 			router.refresh();
 		},
 	});
-
-	const queryClient = useQueryClient();
 
 	const submitRequest = useMutation({
 		mutationFn: (data: SubmitRequestInput) => client.logistics.submit(data),
@@ -232,7 +248,7 @@ export default function RequestActions({
 					description="Are you sure you want to cancel this submitted request? It will be permanently removed."
 					actionLabel="Cancel Request"
 					isDestructive
-					onConfirm={() => {
+					onConfirm={(close) => {
 						// Using DELETE logic for cancellation
 						handleAction("DELETE", close);
 					}}
@@ -412,7 +428,14 @@ function ActionDialog({
 						variant={isDestructive ? "destructive" : "default"}
 						disabled={isPending}
 					>
-						{isPending ? "Processing..." : actionLabel}
+						{isPending ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Processing...
+							</>
+						) : (
+							actionLabel
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -460,7 +483,14 @@ function ConfirmDialog({
 						}
 						disabled={isPending}
 					>
-						{isPending ? "Processing..." : actionLabel}
+						{isPending ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Processing...
+							</>
+						) : (
+							actionLabel
+						)}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>
