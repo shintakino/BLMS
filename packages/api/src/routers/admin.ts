@@ -60,21 +60,44 @@ export const adminRouter = {
 
 	// List all users (for admin management)
 	listUsers: adminProcedure
-		.output(
-			z.array(
-				z.object({
-					id: z.string(),
-					name: z.string().nullable(),
-					email: z.string(),
-					role: z.string().nullable(),
-					stationId: z.string().nullable(),
-					provinceId: z.string().nullable(),
-					createdAt: z.date(),
-				}),
-			),
+		.input(
+			z.object({
+				limit: z.number().optional(),
+				offset: z.number().optional(),
+				search: z.string().optional(),
+			}),
 		)
-		.handler(async () => {
-			const users = await db
+		.output(
+			z.object({
+				users: z.array(
+					z.object({
+						id: z.string(),
+						name: z.string().nullable(),
+						email: z.string(),
+						role: z.string().nullable(),
+						stationId: z.string().nullable(),
+						provinceId: z.string().nullable(),
+						createdAt: z.date(),
+					}),
+				),
+				total: z.number(),
+			}),
+		)
+		.handler(async ({ input }) => {
+			const { limit, offset, search } = input;
+
+			const conditions = [];
+			if (search) {
+				const searchLower = search.toLowerCase();
+				conditions.push(
+					sql`lower(${userTable.name}) LIKE ${`%${searchLower}%`} OR lower(${userTable.email}) LIKE ${`%${searchLower}%`} OR lower(${userTable.role}) LIKE ${`%${searchLower}%`}`,
+				);
+			}
+
+			const whereClause =
+				conditions.length > 0 ? sql.join(conditions, sql` AND `) : undefined;
+
+			const usersQuery = db
 				.select({
 					id: userTable.id,
 					name: userTable.name,
@@ -84,9 +107,24 @@ export const adminRouter = {
 					provinceId: userTable.provinceId,
 					createdAt: userTable.createdAt,
 				})
-				.from(userTable);
+				.from(userTable)
+				.where(whereClause);
 
-			return users;
+			const countQuery = db
+				.select({ count: sql<number>`count(*)` })
+				.from(userTable)
+				.where(whereClause);
+
+			// Apply pagination if limit/offset are provided
+			if (limit) usersQuery.limit(limit);
+			if (offset) usersQuery.offset(offset);
+
+			const [users, countResult] = await Promise.all([usersQuery, countQuery]);
+
+			return {
+				users,
+				total: Number(countResult[0]?.count || 0),
+			};
 		}),
 
 	// List all stations

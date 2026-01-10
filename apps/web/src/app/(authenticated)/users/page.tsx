@@ -11,7 +11,7 @@ import {
 	Trash2,
 	UserCog,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import UserForm from "@/components/admin/user-form";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function UsersPage() {
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	// biome-ignore lint/suspicious/noExplicitAny: complex user type
@@ -63,14 +64,27 @@ export default function UsersPage() {
 	// biome-ignore lint/suspicious/noExplicitAny: complex user type
 	const [deletingUser, setDeletingUser] = useState<any>(null);
 
-	const {
-		data: users,
-		isLoading,
-		refetch,
-	} = useQuery({
-		queryKey: ["admin", "listUsers"],
-		queryFn: () => client.admin.listUsers({}),
+	// Debounce search
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(search);
+			setCurrentPage(1); // Reset to page 1 on search change
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [search]);
+
+	const { data, isLoading, refetch } = useQuery({
+		queryKey: ["admin", "listUsers", currentPage, debouncedSearch],
+		queryFn: () =>
+			client.admin.listUsers({
+				limit: ITEMS_PER_PAGE,
+				offset: (currentPage - 1) * ITEMS_PER_PAGE,
+				search: debouncedSearch || undefined,
+			}),
 	});
+
+	const users = data?.users || [];
+	const totalUsers = data?.total || 0;
 
 	const { mutate: deleteUser, isPending: isDeleting } = useMutation({
 		mutationFn: (id: string) => client.admin.deleteUser({ id }),
@@ -93,28 +107,18 @@ export default function UsersPage() {
 	// Create a map for quick lookup
 	const stationMap = new Map(stations?.map((s) => [s.id, s.name]) ?? []);
 
-	// Client-side filtering
-	const filteredUsers = useMemo(() => {
-		if (!users) return [];
-		return users.filter(
-			(user) =>
-				user.name?.toLowerCase().includes(search.toLowerCase()) ||
-				user.email.toLowerCase().includes(search.toLowerCase()) ||
-				user.role?.toLowerCase().includes(search.toLowerCase()),
-		);
-	}, [users, search]);
+	// Client-side filtering removed as it's now handled by the API
 
 	// Pagination logic
-	const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-	const paginatedUsers = useMemo(() => {
-		const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-		return filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-	}, [filteredUsers, currentPage]);
+	const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
+
+	// No need for client-side slicing
+	const paginatedUsers = users;
 
 	// Reset to page 1 when search changes
 	const handleSearchChange = (value: string) => {
 		setSearch(value);
-		setCurrentPage(1);
+		// Debounce handles page reset
 	};
 
 	const handleSuccess = () => {
@@ -274,8 +278,8 @@ export default function UsersPage() {
 				<div className="flex items-center justify-between">
 					<p className="text-muted-foreground text-sm">
 						Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-						{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of{" "}
-						{filteredUsers.length} users
+						{Math.min(currentPage * ITEMS_PER_PAGE, totalUsers)} of {totalUsers}{" "}
+						users
 					</p>
 					<Pagination>
 						<PaginationContent>
