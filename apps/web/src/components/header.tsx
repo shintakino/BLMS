@@ -38,28 +38,40 @@ export default function Header() {
 			initial={{ y: -100 }}
 			animate={{ y: 0 }}
 			transition={{ duration: 0.5 }}
-			className="fixed top-0 right-0 left-0 z-50 border-border/40 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60"
+			className="fixed top-0 right-0 left-0 z-50 border-white/10 border-b bg-slate-950/70 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/50"
 		>
 			<div className="container mx-auto flex h-16 items-center justify-between px-4">
 				{/* Logo & Branding */}
+				{/* Logo & Branding */}
 				<Link
 					href="/"
-					className="flex items-center gap-3 transition-opacity hover:opacity-80"
+					className="flex items-center gap-4 transition-opacity hover:opacity-80"
 				>
-					<div className="relative h-10 w-10 overflow-hidden drop-shadow-md">
-						<Image
-							src="/images/Bureau_of_Fire_Protection.png"
-							alt="BFP Logo"
-							fill
-							className="object-contain"
-							priority
-						/>
+					<div className="flex items-center gap-2">
+						<div className="relative h-10 w-10 drop-shadow-md">
+							<Image
+								src="/images/bfpNationalLogo.png"
+								alt="BFP National Logo"
+								fill
+								className="object-contain"
+								priority
+							/>
+						</div>
+						<div className="relative h-10 w-10 drop-shadow-md">
+							<Image
+								src="/images/bfpRegion12Logo.png"
+								alt="BFP Region 12 Logo"
+								fill
+								className="object-contain"
+								priority
+							/>
+						</div>
 					</div>
 					<div className="hidden flex-col md:flex">
-						<span className="font-bold text-sm leading-none tracking-tight">
+						<span className="font-bold text-slate-100 text-sm leading-none tracking-tight">
 							Bureau of Fire Protection
 						</span>
-						<span className="font-medium text-muted-foreground text-xs leading-none">
+						<span className="font-medium text-slate-400 text-xs leading-none">
 							Region XII Logistics
 						</span>
 					</div>
@@ -70,7 +82,7 @@ export default function Header() {
 					<nav className="hidden items-center gap-6 font-medium text-sm md:flex">
 						<Link
 							href="/"
-							className={`transition-colors hover:text-red-600 ${pathname === "/" ? "text-red-600" : "text-foreground/60"}`}
+							className={`transition-colors hover:text-red-500 ${pathname === "/" ? "text-red-500" : "text-slate-300"}`}
 						>
 							Home
 						</Link>

@@ -11,7 +11,10 @@ import {
 	ShieldAlert,
 	Truck,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+// Ember Particle Effect Component
+import { EmberParticles } from "@/components/ember-particles";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,41 +27,6 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
-
-// Ember Particle Effect Component
-const EmberParticles = () => {
-	// Generate static random values for hydration consistency
-	const particles = Array.from({ length: 20 }).map((_, i) => ({
-		id: i,
-		left: `${(i * 5) % 100}%`,
-		duration: 3 + (i % 5),
-		delay: i * 0.2,
-	}));
-
-	return (
-		<div className="pointer-events-none absolute inset-0 overflow-hidden">
-			{particles.map((particle) => (
-				<motion.div
-					key={particle.id}
-					className="absolute bottom-0 h-1 w-1 rounded-full bg-red-500 opacity-0"
-					style={{ left: particle.left }}
-					animate={{
-						y: [0, -400],
-						x: [0, particle.id % 2 === 0 ? 50 : -50],
-						opacity: [0, 1, 0],
-						scale: [0, 1.5, 0],
-					}}
-					transition={{
-						duration: particle.duration,
-						repeat: Number.POSITIVE_INFINITY,
-						ease: "easeOut",
-						delay: particle.delay,
-					}}
-				/>
-			))}
-		</div>
-	);
-};
 
 const fadeInUp = {
 	hidden: { opacity: 0, y: 20 },
@@ -80,41 +48,36 @@ export default function LandingPage() {
 	const { data: session } = authClient.useSession();
 
 	// Parallax Effects
-	const heroBgY = useTransform(scrollY, [0, 1000], [0, 400]);
 	const heroTextY = useTransform(scrollY, [0, 500], [0, 100]); // Subtle shift for text
 	const embersY = useTransform(scrollY, [0, 1000], [0, 200]); // Embers move at different speed
 
 	return (
-		<div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+		<div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-foreground">
 			{/* Hero Section */}
-			<section className="relative h-screen min-h-[800px] overflow-hidden bg-slate-950 text-white">
-				<motion.div
-					style={{ y: heroBgY }}
-					className="absolute inset-0 z-0 opacity-20"
-				>
-					{/* Abstract background pattern */}
-					<svg
-						className="h-[120%] w-full"
-						viewBox="0 0 100 100"
-						preserveAspectRatio="none"
-						aria-labelledby="hero-pattern-title"
-					>
-						<title id="hero-pattern-title">Abstract background pattern</title>
-						<path d="M0 100 L100 0 L100 100 Z" fill="url(#grad1)" />
-						<defs>
-							<linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-								<stop
-									offset="0%"
-									style={{ stopColor: "rgb(200,0,0)", stopOpacity: 1 }}
-								/>
-								<stop
-									offset="100%"
-									style={{ stopColor: "rgb(0,0,0)", stopOpacity: 1 }}
-								/>
-							</linearGradient>
-						</defs>
-					</svg>
-				</motion.div>
+			{/* Global Background */}
+			<div className="absolute inset-0 z-0 flex justify-center bg-slate-950">
+				<Image
+					src="/images/fireman.png"
+					alt="Firefighter Background"
+					fill
+					className="scale-105 object-contain object-top opacity-50 blur-[2px] md:opacity-30"
+					priority
+					quality={50}
+				/>
+				<Image
+					src="/images/fireman.png"
+					alt="Firefighter Background"
+					fill
+					className="object-contain object-top"
+					priority
+					quality={90}
+				/>
+				<div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/40 to-slate-950/90" />
+			</div>
+
+			{/* Hero Section */}
+			<section className="relative min-h-screen overflow-hidden text-white">
+				{/* Abstract background pattern removed in favor of global background */}
 
 				{/* Fire Animation Effect with Parallax */}
 				<motion.div style={{ y: embersY }} className="absolute inset-0 z-0">
@@ -123,17 +86,39 @@ export default function LandingPage() {
 
 				<motion.div
 					style={{ y: heroTextY }}
-					className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 text-center"
+					className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 pt-20 text-center"
 					initial="hidden"
 					animate="visible"
 					variants={staggerContainer}
 				>
+					<motion.div
+						variants={fadeInUp}
+						className="mb-8 flex justify-center gap-6 md:gap-12"
+					>
+						<div className="relative h-24 w-24 drop-shadow-2xl md:h-32 md:w-32">
+							<Image
+								src="/images/bfpNationalLogo.png"
+								alt="BFP National Logo"
+								fill
+								className="object-contain"
+							/>
+						</div>
+						<div className="relative h-24 w-24 drop-shadow-2xl md:h-32 md:w-32">
+							<Image
+								src="/images/bfpRegion12Logo.png"
+								alt="BFP Region 12 Logo"
+								fill
+								className="object-contain"
+							/>
+						</div>
+					</motion.div>
+
 					<motion.div variants={fadeInUp} className="mb-6 flex justify-center">
 						<Badge
 							variant="destructive"
-							className="px-4 py-1 font-semibold text-sm uppercase tracking-wider shadow-lg shadow-red-900/50"
+							className="border-red-500/50 bg-gradient-to-r from-red-900/50 to-red-950/50 px-6 py-1.5 font-semibold text-red-100 text-sm uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-sm"
 						>
-							Restricted • Official Use Only
+							Official Use Only
 						</Badge>
 					</motion.div>
 
@@ -186,30 +171,32 @@ export default function LandingPage() {
 							duration: 2,
 							repeat: Number.POSITIVE_INFINITY,
 						}}
-						className="absolute bottom-10 left-1/2 -translate-x-1/2 text-slate-500"
+						className="mt-12 text-slate-500"
 					>
 						<div className="flex flex-col items-center gap-2">
-							<span className="text-xs uppercase tracking-widest">Scroll</span>
-							<div className="h-10 w-[1px] bg-gradient-to-b from-slate-500 to-transparent" />
+							<span className="font-medium text-slate-400 text-xs uppercase tracking-[0.2em]">
+								Scroll
+							</span>
+							<div className="h-12 w-[1px] bg-gradient-to-b from-slate-400 to-transparent" />
 						</div>
 					</motion.div>
 				</motion.div>
 			</section>
 
 			{/* System Purpose */}
-			<section className="relative z-20 bg-slate-50 py-24 dark:bg-slate-900">
+			<section className="relative z-20 py-24">
 				<div className="container mx-auto max-w-5xl px-4">
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true, margin: "-100px" }}
 						transition={{ duration: 0.6 }}
-						className="mb-16 text-center"
+						className="mb-16 rounded-3xl border border-white/10 bg-black/20 p-12 text-center backdrop-blur-sm"
 					>
-						<h2 className="mb-4 font-bold text-4xl text-slate-900 dark:text-white">
+						<h2 className="mb-4 font-bold text-4xl text-white">
 							System Purpose
 						</h2>
-						<p className="mx-auto max-w-2xl text-lg text-slate-600 dark:text-slate-400">
+						<p className="mx-auto max-w-2xl text-lg text-slate-300">
 							Designed to support the operational readiness of fire stations
 							across Region XII by providing accurate visibility and structured
 							workflows.
@@ -257,7 +244,7 @@ export default function LandingPage() {
 								<Building2 className="h-8 w-8 text-red-600" />
 								<h3 className="font-bold text-3xl">Organizational Scope</h3>
 							</div>
-							<div className="space-y-6 text-lg text-slate-600 dark:text-slate-400">
+							<div className="space-y-6 text-lg text-slate-300">
 								<p>This system is strictly limited to:</p>
 								<ul className="list-inside list-disc space-y-3 marker:text-red-500">
 									<li>Region XII – SOCCSKSARGEN</li>
@@ -318,7 +305,7 @@ export default function LandingPage() {
 			<Separator />
 
 			{/* Security Notice */}
-			<section className="relative z-20 bg-slate-50/50 py-24">
+			<section className="relative z-20 py-24">
 				<div className="container mx-auto max-w-4xl px-4">
 					<motion.div
 						initial={{ opacity: 0, scale: 0.95 }}
@@ -343,7 +330,7 @@ export default function LandingPage() {
 			</section>
 
 			{/* Footer */}
-			<footer className="relative z-20 bg-slate-950 py-12 text-center text-slate-400">
+			<footer className="relative z-20 border-white/10 border-t bg-slate-950/80 py-12 text-center text-slate-400 backdrop-blur-xl">
 				<div className="container mx-auto px-4">
 					<div className="mb-4 font-bold text-lg text-white">
 						Bureau of Fire Protection – Region XII
@@ -370,7 +357,7 @@ function PurposeCard({
 }) {
 	return (
 		<motion.div variants={fadeInUp}>
-			<Card className="h-full border-t-4 border-t-red-600 transition-all hover:-translate-y-2 hover:shadow-2xl">
+			<Card className="h-full border-white/10 border-t-4 border-t-red-600 bg-black/40 text-slate-200 backdrop-blur-md transition-all hover:-translate-y-2 hover:bg-black/60 hover:shadow-2xl hover:shadow-red-900/20">
 				<CardHeader>
 					<div className="mb-6">{icon}</div>
 					<CardTitle className="text-2xl">{title}</CardTitle>
@@ -400,15 +387,13 @@ function WorkflowStep({
 			whileInView={{ opacity: 1, x: 0 }}
 			viewport={{ once: true }}
 			transition={{ duration: 0.5, delay }}
-			className="relative"
+			className="relative rounded-2xl border border-white/5 bg-black/30 p-6 backdrop-blur-sm"
 		>
-			<span className="absolute -left-[49px] flex h-6 w-6 items-center justify-center rounded-full bg-red-600 shadow-md ring-4 ring-white dark:ring-slate-950">
+			<span className="absolute top-8 -left-[54px] flex h-6 w-6 items-center justify-center rounded-full bg-red-600 shadow-md ring-4 ring-slate-950">
 				<div className="h-2 w-2 rounded-full bg-white" />
 			</span>
-			<h4 className="mb-1 font-bold text-xl">{stepRole}</h4>
-			<p className="text-lg text-slate-600 leading-relaxed dark:text-slate-400">
-				{action}
-			</p>
+			<h4 className="mb-2 font-bold text-white text-xl">{stepRole}</h4>
+			<p className="text-lg text-slate-300 leading-relaxed">{action}</p>
 		</motion.div>
 	);
 }
