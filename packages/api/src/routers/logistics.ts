@@ -166,6 +166,9 @@ export const logisticsRouter = {
 			z.object({
 				draft: z.number(),
 				pending: z.number(),
+				submitted: z.number(),
+				validated: z.number(),
+				reviewed: z.number(),
 				approved: z.number(),
 				rejected: z.number(),
 			}),
@@ -196,6 +199,9 @@ export const logisticsRouter = {
 			const stats = {
 				draft: 0,
 				pending: 0,
+				submitted: 0,
+				validated: 0,
+				reviewed: 0,
 				approved: 0,
 				rejected: 0,
 			};
@@ -204,8 +210,16 @@ export const logisticsRouter = {
 				if (r.status === "DRAFT") stats.draft++;
 				else if (r.status === "APPROVED") stats.approved++;
 				else if (r.status === "REJECTED") stats.rejected++;
-				else if (["SUBMITTED", "VALIDATED", "REVIEWED"].includes(r.status))
+				else if (r.status === "SUBMITTED") {
+					stats.submitted++;
 					stats.pending++;
+				} else if (r.status === "VALIDATED") {
+					stats.validated++;
+					stats.pending++;
+				} else if (r.status === "REVIEWED") {
+					stats.reviewed++;
+					stats.pending++;
+				}
 			}
 
 			return stats;

@@ -1,7 +1,7 @@
 import { db } from "@BLMS/db";
 import { assets, assetTransfers, inventory } from "@BLMS/db/schema/inventory";
 import { ORPCError } from "@orpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { logAudit } from "../lib/audit";
 import {
@@ -630,5 +630,84 @@ export const inventoryRouter = {
 
 				return { success: true, status: newStatus };
 			});
+		}),
+
+	// List available stations for transfer (Authenticated users)
+	listStations: protectedProcedure
+		.output(
+			z.array(
+				z.object({
+					id: z.string(),
+					name: z.string(),
+				}),
+			),
+		)
+		.handler(async () => {
+			// We can filter out current station in frontend if needed
+			const stationList = await db.query.stations.findMany({
+				columns: {
+					id: true,
+					name: true,
+				},
+				orderBy: (stations, { asc }) => [asc(stations.name)],
+			});
+
+			return stationList;
+		}),
+
+	// List asset transfers for station (Incoming & Outgoing)
+	listTransfers: stationCommanderProcedure
+		.output(
+			z.array(
+				z.object({
+					id: z.string(),
+					assetId: z.string(),
+					fromStationId: z.string(),
+					toStationId: z.string(),
+					status: z.enum(["PENDING", "APPROVED", "COMPLETED", "CANCELLED"]),
+					requestedBy: z.string(),
+					remarks: z.string().nullable(),
+					createdAt: z.date(),
+					updatedAt: z.date(),
+					asset: z.object({
+						name: z.string(),
+						serialNumber: z.string().nullable(),
+					}),
+					fromStation: z.object({
+						name: z.string(),
+					}),
+					toStation: z.object({
+						name: z.string(),
+					}),
+				}),
+			),
+		)
+		.handler(async ({ context }) => {
+			const { user } = context.session;
+			const stationId = user.stationId;
+
+			if (!stationId) {
+				throw new ORPCError("BAD_REQUEST", { message: "No station assigned" });
+			}
+
+			const transfers = await db.query.assetTransfers.findMany({
+				where: or(
+					eq(assetTransfers.fromStationId, stationId),
+					eq(assetTransfers.toStationId, stationId),
+				),
+				with: {
+					asset: true,
+					fromStation: true,
+					toStation: true,
+				},
+				orderBy: (transfers, { desc }) => [desc(transfers.createdAt)],
+			});
+
+			return transfers.map((t) => ({
+				...t,
+				asset: { name: t.asset.name, serialNumber: t.asset.serialNumber },
+				fromStation: { name: t.fromStation.name },
+				toStation: { name: t.toStation.name },
+			}));
 		}),
 };

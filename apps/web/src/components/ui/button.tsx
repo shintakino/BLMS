@@ -1,4 +1,5 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
+import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -37,8 +38,23 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  asChild,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
+  if (asChild && React.isValidElement(props.children)) {
+    return (
+      <ButtonPrimitive
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        render={props.children}
+        // When asChild is true, we might be rendering a non-button element (like <a>).
+        // Base UI requires us to explicitly say we are not rendering a native button in that case.
+        nativeButton={asChild ? false : undefined}
+        {...props}
+      />
+    )
+  }
   return (
     <ButtonPrimitive
       data-slot="button"

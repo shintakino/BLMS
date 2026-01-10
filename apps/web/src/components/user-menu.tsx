@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import * as React from "react";
 
 import {
 	DropdownMenu,
@@ -17,9 +18,14 @@ import { Skeleton } from "./ui/skeleton";
 
 export default function UserMenu() {
 	const router = useRouter();
+	const [isMounted, setIsMounted] = React.useState(false);
 	const { data: session, isPending } = authClient.useSession();
 
-	if (isPending) {
+	React.useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
+	if (!isMounted || isPending) {
 		return <Skeleton className="h-9 w-24" />;
 	}
 

@@ -66,7 +66,14 @@ export default function RequestActions({
 }: RequestActionsProps) {
 	const router = useRouter();
 	const [remarks, setRemarks] = useState("");
-	const [activeAction, setActiveAction] = useState<string | null>(null);
+
+	// Remove activeAction state as we pass it directly
+	// const [activeAction, setActiveAction] = useState<string | null>(null);
+
+	// Track which dialog is open to handle closing programmatically if needed,
+	// or just let the mutation success close it.
+	// Actually, we can use a simpler approach: pass a callback to close the dialog.
+	// Or even simpler: Use detailed useMutation states?
 
 	// Mutations
 	const validateRequest = useMutation({
@@ -117,39 +124,45 @@ export default function RequestActions({
 		},
 	});
 
-	const handleAction = async () => {
-		if (!activeAction) return;
+	// Store loading state here based on mutation
+	const isPending =
+		validateRequest.isPending ||
+		consolidateRequest.isPending ||
+		finalApproveRequest.isPending ||
+		submitRequest.isPending ||
+		deleteRequest.isPending;
 
+	const handleAction = async (action: string, closeDialog?: () => void) => {
 		try {
 			if (userRole === "station-commander") {
 				await validateRequest.mutateAsync({
 					requestId,
-					action: activeAction === "APPROVE" ? "VALIDATE" : "REJECT",
+					action: action === "APPROVE" ? "VALIDATE" : "REJECT",
 					remarks,
 				});
 			} else if (userRole === "regional-logistics-manager") {
 				await consolidateRequest.mutateAsync({
 					requestId,
-					action: activeAction === "APPROVE" ? "REVIEW" : "REJECT",
+					action: action === "APPROVE" ? "REVIEW" : "REJECT",
 					remarks,
 				});
 			} else if (userRole === "regional-director") {
 				await finalApproveRequest.mutateAsync({
 					requestId,
-					action: activeAction === "APPROVE" ? "APPROVE" : "REJECT",
+					action: action === "APPROVE" ? "APPROVE" : "REJECT",
 					remarks,
 				});
-			} else if (userRole === "supply-officer" && activeAction === "SUBMIT") {
+			} else if (userRole === "supply-officer" && action === "SUBMIT") {
 				await submitRequest.mutateAsync({
 					requestId,
 				});
-			} else if (userRole === "supply-officer" && activeAction === "DELETE") {
+			} else if (userRole === "supply-officer" && action === "DELETE") {
 				await deleteRequest.mutateAsync({
 					requestId,
 				});
 			}
 			setRemarks("");
-			setActiveAction(null);
+			if (closeDialog) closeDialog();
 		} catch (err: unknown) {
 			toast.error(err instanceof Error ? err.message : "Action failed");
 		}
@@ -178,10 +191,10 @@ export default function RequestActions({
 					title="Submit Request"
 					description="Submit this request for approval? You can no longer edit it after submission."
 					actionLabel="Submit"
-					onConfirm={() => {
-						setActiveAction("SUBMIT");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("SUBMIT", close);
 					}}
+					isPending={isPending}
 				/>
 
 				<ConfirmDialog
@@ -194,10 +207,10 @@ export default function RequestActions({
 					description="Are you sure you want to delete this draft? This action cannot be undone."
 					actionLabel="Delete"
 					isDestructive
-					onConfirm={() => {
-						setActiveAction("DELETE");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("DELETE", close);
 					}}
+					isPending={isPending}
 				/>
 			</div>
 		);
@@ -221,9 +234,9 @@ export default function RequestActions({
 					isDestructive
 					onConfirm={() => {
 						// Using DELETE logic for cancellation
-						setActiveAction("DELETE");
-						handleAction();
+						handleAction("DELETE", close);
 					}}
+					isPending={isPending}
 				/>
 			</div>
 		);
@@ -241,12 +254,12 @@ export default function RequestActions({
 					title="Validate Request"
 					description="Confirm that this request is legitimate and necessary for the station."
 					actionLabel="Validate"
-					onConfirm={() => {
-						setActiveAction("APPROVE");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("APPROVE", close);
 					}}
 					remarks={remarks}
 					setRemarks={setRemarks}
+					isPending={isPending}
 				/>
 				<ActionDialog
 					trigger={
@@ -258,12 +271,12 @@ export default function RequestActions({
 					description="Provide a reason for rejecting this request."
 					actionLabel="Reject"
 					isDestructive
-					onConfirm={() => {
-						setActiveAction("REJECT");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("REJECT", close);
 					}}
 					remarks={remarks}
 					setRemarks={setRemarks}
+					isPending={isPending}
 				/>
 			</div>
 		);
@@ -284,12 +297,12 @@ export default function RequestActions({
 					title="Review Request"
 					description="Mark this request as reviewed and consolidated for RD approval."
 					actionLabel="Review"
-					onConfirm={() => {
-						setActiveAction("APPROVE");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("APPROVE", close);
 					}}
 					remarks={remarks}
 					setRemarks={setRemarks}
+					isPending={isPending}
 				/>
 				<ActionDialog
 					trigger={
@@ -301,12 +314,12 @@ export default function RequestActions({
 					description="Send back or reject this request."
 					actionLabel="Reject"
 					isDestructive
-					onConfirm={() => {
-						setActiveAction("REJECT");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("REJECT", close);
 					}}
 					remarks={remarks}
 					setRemarks={setRemarks}
+					isPending={isPending}
 				/>
 			</div>
 		);
@@ -324,12 +337,12 @@ export default function RequestActions({
 					title="Grant Final Approval"
 					description="This will authorize the release/procurement of items."
 					actionLabel="Approve"
-					onConfirm={() => {
-						setActiveAction("APPROVE");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("APPROVE", close);
 					}}
 					remarks={remarks}
 					setRemarks={setRemarks}
+					isPending={isPending}
 				/>
 				<ActionDialog
 					trigger={
@@ -341,12 +354,12 @@ export default function RequestActions({
 					description="Reject this request with remarks."
 					actionLabel="Disapprove"
 					isDestructive
-					onConfirm={() => {
-						setActiveAction("REJECT");
-						handleAction();
+					onConfirm={(close) => {
+						handleAction("REJECT", close);
 					}}
 					remarks={remarks}
 					setRemarks={setRemarks}
+					isPending={isPending}
 				/>
 			</div>
 		);
@@ -364,18 +377,21 @@ function ActionDialog({
 	remarks,
 	setRemarks,
 	isDestructive,
+	isPending,
 }: {
 	trigger: React.ReactElement;
 	title: string;
 	description: string;
 	actionLabel: string;
-	onConfirm: () => void;
+	onConfirm: (close: () => void) => void;
 	remarks: string;
 	setRemarks: (val: string) => void;
 	isDestructive?: boolean;
+	isPending?: boolean;
 }) {
+	const [open, setOpen] = useState(false);
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
@@ -384,17 +400,19 @@ function ActionDialog({
 				</DialogHeader>
 				<div className="py-4">
 					<Textarea
-						placeholder="Add remarks..."
+						placeholder="Add remarks (optional)..."
 						value={remarks}
 						onChange={(e) => setRemarks(e.target.value)}
+						disabled={isPending}
 					/>
 				</div>
 				<DialogFooter>
 					<Button
-						onClick={onConfirm}
+						onClick={() => onConfirm(() => setOpen(false))}
 						variant={isDestructive ? "destructive" : "default"}
+						disabled={isPending}
 					>
-						{actionLabel}
+						{isPending ? "Processing..." : actionLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -409,16 +427,19 @@ function ConfirmDialog({
 	actionLabel,
 	onConfirm,
 	isDestructive,
+	isPending,
 }: {
 	trigger: React.ReactElement;
 	title: string;
 	description: string;
 	actionLabel: string;
-	onConfirm: () => void;
+	onConfirm: (close: () => void) => void;
 	isDestructive?: boolean;
+	isPending?: boolean;
 }) {
+	const [open, setOpen] = useState(false);
 	return (
-		<AlertDialog>
+		<AlertDialog open={open} onOpenChange={setOpen}>
 			<AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
 			<AlertDialogContent>
 				<AlertDialogHeader>
@@ -426,16 +447,20 @@ function ConfirmDialog({
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
+					<AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
 					<AlertDialogAction
-						onClick={onConfirm}
+						onClick={(e) => {
+							e.preventDefault(); // Prevent default close, we handle it
+							onConfirm(() => setOpen(false));
+						}}
 						className={
 							isDestructive
 								? "bg-red-600 hover:bg-red-700"
 								: "bg-blue-600 hover:bg-blue-700"
 						}
+						disabled={isPending}
 					>
-						{actionLabel}
+						{isPending ? "Processing..." : actionLabel}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>
