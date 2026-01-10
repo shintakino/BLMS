@@ -56,6 +56,26 @@ export const logisticsRouter = {
 					approvedAt: z.date().nullable(),
 					createdAt: z.date(),
 					updatedAt: z.date(),
+					station: z.object({
+						id: z.string(),
+						name: z.string(),
+					}),
+					validator: z
+						.object({
+							id: z.string(),
+							name: z.string(),
+						})
+						.nullable(),
+					reviewer: z
+						.object({
+							id: z.string(),
+							name: z.string(),
+						})
+						.nullable(),
+					creator: z.object({
+						id: z.string(),
+						name: z.string(),
+					}),
 				}),
 			),
 		)
@@ -65,6 +85,12 @@ export const logisticsRouter = {
 			return await db.query.requests.findMany({
 				limit: input.limit,
 				offset: input.offset,
+				with: {
+					station: true,
+					creator: true,
+					validator: true,
+					reviewer: true,
+				},
 				where: (requests, { eq, and }) => {
 					const conditions = [];
 					if (input?.status) conditions.push(eq(requests.status, input.status));
@@ -123,6 +149,10 @@ export const logisticsRouter = {
 						}),
 					}),
 				),
+				creator: z.object({
+					id: z.string(),
+					name: z.string(),
+				}),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -132,6 +162,7 @@ export const logisticsRouter = {
 				where: eq(requests.id, input.id),
 				with: {
 					items: true,
+					creator: true,
 					approvals: {
 						with: {
 							user: true,

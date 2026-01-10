@@ -176,7 +176,9 @@ export default function RLMDashboard({
 													{request.id.substring(0, 8)}...
 												</Link>
 											</TableCell>
-											<TableCell>{request.stationId}</TableCell>
+											<TableCell>
+												{request.station?.name || request.stationId}
+											</TableCell>
 											<TableCell>
 												<Badge
 													variant={
@@ -188,7 +190,7 @@ export default function RLMDashboard({
 													{request.priority}
 												</Badge>
 											</TableCell>
-											<TableCell>{request.validatedBy || "-"}</TableCell>
+											<TableCell>{request.validator?.name || "-"}</TableCell>
 											<TableCell>
 												{new Date(request.createdAt).toLocaleDateString()}
 											</TableCell>

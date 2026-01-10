@@ -180,8 +180,7 @@ export default function StationCommanderDashboard({
 												</Link>
 											</TableCell>
 											<TableCell>
-												{request.createdBy}{" "}
-												{/* Should be username but API might return ID */}
+												{request.creator?.name || request.createdBy}
 											</TableCell>
 											<TableCell>
 												<Badge

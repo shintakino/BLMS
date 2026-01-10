@@ -137,7 +137,7 @@ export default function RequestDetailsPage({
 										{new Date(request.createdAt).toLocaleDateString()}
 									</p>
 									<p className="text-muted-foreground text-xs">
-										by {request.createdBy}
+										by {request.creator?.name || request.createdBy}
 									</p>
 								</div>
 

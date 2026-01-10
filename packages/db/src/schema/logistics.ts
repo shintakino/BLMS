@@ -91,6 +91,21 @@ export const requestsRelations = relations(requests, ({ one, many }) => ({
 		references: [user.id],
 		relationName: "created_requests",
 	}),
+	validator: one(user, {
+		fields: [requests.validatedBy],
+		references: [user.id],
+		relationName: "validated_requests",
+	}),
+	reviewer: one(user, {
+		fields: [requests.reviewedBy],
+		references: [user.id],
+		relationName: "reviewed_requests",
+	}),
+	approver: one(user, {
+		fields: [requests.approvedBy],
+		references: [user.id],
+		relationName: "approved_requests",
+	}),
 	items: many(requestItems),
 	approvals: many(approvals),
 }));
