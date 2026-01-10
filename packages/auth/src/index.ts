@@ -48,7 +48,13 @@ const config = {
 			},
 		},
 	},
-	trustedOrigins: [process.env.CORS_ORIGIN || "", "mybettertapp://", "exp://"],
+	trustedOrigins: [
+		process.env.CORS_ORIGIN || "",
+		"mybettertapp://",
+		"exp://",
+		// Allow Vercel preview/production domains
+		"https://*.vercel.app",
+	],
 	emailAndPassword: {
 		enabled: true,
 		async sendResetPassword(data: { user: { email: string }; url: string }) {
