@@ -108,6 +108,7 @@ export const requestsRelations = relations(requests, ({ one, many }) => ({
 	}),
 	items: many(requestItems),
 	approvals: many(approvals),
+	attachments: many(requestAttachments),
 }));
 
 export const requestItemsRelations = relations(requestItems, ({ one }) => ({
@@ -127,3 +128,25 @@ export const approvalsRelations = relations(approvals, ({ one }) => ({
 		references: [user.id],
 	}),
 }));
+
+export const requestAttachments = pgTable("request_attachments", {
+	id: text("id").primaryKey(),
+	requestId: text("request_id")
+		.references(() => requests.id, { onDelete: "cascade" })
+		.notNull(),
+	fileName: text("file_name").notNull(),
+	fileUrl: text("file_url").notNull(),
+	fileType: text("file_type").notNull(),
+
+	uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
+export const requestAttachmentsRelations = relations(
+	requestAttachments,
+	({ one }) => ({
+		request: one(requests, {
+			fields: [requestAttachments.requestId],
+			references: [requests.id],
+		}),
+	}),
+);

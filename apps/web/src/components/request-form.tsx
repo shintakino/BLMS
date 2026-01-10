@@ -1,14 +1,16 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { FileUpload } from "@/components/file-upload";
 
 import { client } from "@/utils/orpc";
+import { supabase } from "@/utils/supabase/client";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -49,6 +51,11 @@ interface CreateRequestInput {
 		quantity: number;
 		category: string;
 	}[];
+	attachments: {
+		url: string;
+		name: string;
+		type: string;
+	}[];
 	status: "DRAFT" | "SUBMITTED";
 }
 
@@ -65,6 +72,15 @@ export const requestSchema = z.object({
 		.string()
 		.min(10, "Justification must be at least 10 characters"),
 	items: z.array(itemSchema).min(1, "At least one item is required"),
+	attachments: z
+		.array(
+			z.object({
+				url: z.string(),
+				name: z.string(),
+				type: z.string(),
+			}),
+		)
+		.min(1, "At least one attachment is required"),
 });
 
 interface RequestFormProps {
@@ -75,6 +91,12 @@ interface RequestFormProps {
 			itemName: string;
 			quantity: number;
 			category: string;
+		}[];
+		attachments?: {
+			url: string;
+			filePath?: string; // Added for edit mode persistence
+			name: string;
+			type: string;
 		}[];
 	};
 	requestId?: string;
@@ -90,6 +112,8 @@ export default function RequestForm({
 		"DRAFT" | "SUBMITTED" | null
 	>(null);
 
+	const queryClient = useQueryClient();
+
 	// ORPC Mutation for creating request
 	const createRequest = useMutation({
 		mutationFn: (data: CreateRequestInput) => client.logistics.create(data),
@@ -99,6 +123,7 @@ export default function RequestForm({
 					? "Request saved as draft"
 					: "Request submitted successfully",
 			);
+			queryClient.invalidateQueries({ queryKey: ["requests"] }); // Refresh lists
 			router.push("/dashboard");
 		},
 		onError: (error: Error) => {
@@ -118,6 +143,11 @@ export default function RequestForm({
 					? "Request draft updated"
 					: "Request submitted successfully",
 			);
+			// Invalidate specific request cache so details page updates immediately
+			queryClient.invalidateQueries({
+				queryKey: ["request", variables.requestId],
+			});
+			queryClient.invalidateQueries({ queryKey: ["requests"] }); // Refresh lists
 			router.push("/dashboard");
 		},
 		onError: (error: Error) => {
@@ -126,6 +156,18 @@ export default function RequestForm({
 			});
 		},
 	});
+
+	// Local state for files (raw File objects or existing uploaded files)
+	const [files, setFiles] = useState<
+		(File | { url: string; name: string; type: string })[]
+	>(
+		initialData?.attachments?.map((att) => ({
+			url: att.filePath || att.url, // Use persistent path/key if available
+			name: att.name,
+			type: att.type,
+		})) || [],
+	);
+	const [isUploading, setIsUploading] = useState(false);
 
 	const form = useForm({
 		defaultValues: {
@@ -137,27 +179,77 @@ export default function RequestForm({
 						_id: Math.random().toString(36).substring(7),
 					}))
 				: [{ itemName: "", quantity: 1, category: "General", _id: "initial" }],
+			// We don't bind 'attachments' directly to form state for the UI,
+			// but we keep it compatible with schema if needed.
+			// For now, we will handle attachments manually in onSubmit.
 		},
 		onSubmit: async ({ value }) => {
-			if (requestId) {
-				await updateRequest.mutateAsync({
-					requestId,
-					priority: value.priority,
-					justification: value.justification,
-					items: value.items.map(({ _id, ...rest }) => rest),
-					status: submitIntent.current,
+			try {
+				setIsUploading(true);
+				const finalAttachments: { url: string; name: string; type: string }[] =
+					[];
+
+				// 1. Process files
+				for (const file of files) {
+					if (file instanceof File) {
+						// New file: Upload it
+						const { path, token } = await client.logistics.getUploadUrl({
+							fileName: file.name,
+							fileType: file.type,
+						});
+
+						const { error: uploadError } = await supabase.storage
+							.from("attachments")
+							.uploadToSignedUrl(path, token, file);
+
+						if (uploadError) throw new Error(`Failed to upload ${file.name}`);
+
+						finalAttachments.push({
+							url: path, // Save the path/key
+							name: file.name,
+							type: file.type,
+						});
+					} else {
+						// Existing file: Keep it
+						// Ensure we send the path/key, not a signed URL if we have it
+						finalAttachments.push(file);
+					}
+				}
+
+				if (requestId) {
+					await updateRequest.mutateAsync({
+						requestId,
+						priority: value.priority,
+						justification: value.justification,
+						items: value.items.map(({ _id, ...rest }) => rest),
+						attachments: finalAttachments,
+						status: submitIntent.current,
+					});
+				} else {
+					await createRequest.mutateAsync({
+						priority: value.priority,
+						justification: value.justification,
+						items: value.items.map(({ _id, ...rest }) => rest),
+						attachments: finalAttachments,
+						status: submitIntent.current,
+					});
+				}
+			} catch (error) {
+				console.error("Submission error:", error);
+				toast.error("Failed to submit request", {
+					description:
+						error instanceof Error
+							? error.message
+							: "One or more files failed to upload.",
 				});
-			} else {
-				await createRequest.mutateAsync({
-					priority: value.priority,
-					justification: value.justification,
-					items: value.items.map(({ _id, ...rest }) => rest),
-					status: submitIntent.current,
-				});
+			} finally {
+				setIsUploading(false);
 			}
 		},
 		validators: {
-			onChange: requestSchema,
+			// We skip standard schema validation for attachments here because they are not in form.value
+			// We can validate 'files' length manually.
+			onChange: requestSchema.omit({ attachments: true }),
 		},
 	});
 
@@ -195,7 +287,11 @@ export default function RequestForm({
 										)
 									}
 								>
-									<SelectTrigger>
+									<SelectTrigger
+										className={
+											field.state.meta.errors.length ? "border-red-500" : ""
+										}
+									>
 										<SelectValue>Select priority</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
@@ -205,6 +301,11 @@ export default function RequestForm({
 										<SelectItem value="CRITICAL">Critical</SelectItem>
 									</SelectContent>
 								</Select>
+								{field.state.meta.errors.map((err) => (
+									<p key={err?.message} className="text-red-500 text-sm">
+										{err?.message}
+									</p>
+								))}
 							</div>
 						)}
 					</form.Field>
@@ -236,6 +337,16 @@ export default function RequestForm({
 							</div>
 						)}
 					</form.Field>
+
+					<div className="space-y-2">
+						<Label>Attachments</Label>
+						<FileUpload value={files} onChange={setFiles} />
+						{files.length === 0 && (
+							<p className="text-red-500 text-sm">
+								At least one attachment is required
+							</p>
+						)}
+					</div>
 
 					{/* Items List */}
 					<div className="space-y-4">
@@ -273,13 +384,29 @@ export default function RequestForm({
 														<Label className="text-xs">Item Name</Label>
 														<form.Field name={`items[${i}].itemName`}>
 															{(subField) => (
-																<Input
-																	placeholder="e.g., Fire Hose"
-																	value={subField.state.value}
-																	onChange={(e) =>
-																		subField.handleChange(e.target.value)
-																	}
-																/>
+																<>
+																	<Input
+																		placeholder="e.g., Fire Hose"
+																		value={subField.state.value}
+																		onBlur={subField.handleBlur}
+																		onChange={(e) =>
+																			subField.handleChange(e.target.value)
+																		}
+																		className={
+																			subField.state.meta.errors.length
+																				? "border-red-500"
+																				: ""
+																		}
+																	/>
+																	{subField.state.meta.errors.map((err) => (
+																		<p
+																			key={err?.message}
+																			className="text-red-500 text-xs"
+																		>
+																			{err?.message}
+																		</p>
+																	))}
+																</>
 															)}
 														</form.Field>
 													</div>
@@ -335,7 +462,6 @@ export default function RequestForm({
 														size="icon"
 														className="text-red-500 hover:bg-red-50 hover:text-red-700"
 														onClick={() => form.removeFieldValue("items", i)}
-														disabled={field.state.value.length === 1}
 													>
 														<Trash2 className="h-4 w-4" />
 													</Button>
@@ -357,15 +483,17 @@ export default function RequestForm({
 					</div>
 
 					<form.Subscribe
-						selector={(state) => [state.canSubmit, state.isSubmitting]}
+						selector={(state) =>
+							[state.canSubmit, state.isSubmitting, state.values.items] as const
+						}
 					>
-						{([canSubmit, isSubmitting]) => (
+						{([canSubmit, isSubmitting, items]) => (
 							<div className="flex gap-4">
 								<Button
 									type="button"
 									variant="secondary"
 									className="flex-1"
-									disabled={isSubmitting}
+									disabled={isSubmitting || items.length === 0}
 									onClick={() => {
 										submitIntent.current = "DRAFT";
 										setConfirmAction("DRAFT");
@@ -379,16 +507,27 @@ export default function RequestForm({
 								<Button
 									type="button"
 									className="flex-1"
-									disabled={!canSubmit || isSubmitting}
+									disabled={
+										!canSubmit ||
+										isSubmitting ||
+										isUploading ||
+										files.length === 0 ||
+										items.length === 0
+									}
 									onClick={() => {
 										submitIntent.current = "SUBMITTED";
 										setConfirmAction("SUBMITTED");
 									}}
 								>
-									{isSubmitting && submitIntent.current === "SUBMITTED" && (
+									{(isSubmitting ||
+										(isUploading && submitIntent.current === "SUBMITTED")) && (
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									)}
-									{requestId ? "Update & Submit" : "Submit Request"}
+									{isUploading
+										? "Uploading..."
+										: requestId
+											? "Update & Submit"
+											: "Submit Request"}
 								</Button>
 							</div>
 						)}

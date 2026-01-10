@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download, Eye, Paperclip } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -119,6 +119,69 @@ export default function RequestDetailsPage({
 									</tbody>
 								</table>
 							</div>
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardHeader>
+							<CardTitle>Attachments</CardTitle>
+						</CardHeader>
+						<CardContent>
+							{request.attachments.length === 0 ? (
+								<p className="text-slate-500 text-sm">No attachments.</p>
+							) : (
+								<div className="grid gap-2 sm:grid-cols-2">
+									{request.attachments.map((att) => (
+										<div
+											key={att.id}
+											className="flex items-center gap-3 rounded-lg border p-3"
+										>
+											<div className="flex h-10 w-10 items-center justify-center rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+												<Paperclip className="h-5 w-5" />
+											</div>
+											<div className="flex-1 overflow-hidden">
+												<p className="truncate font-medium text-sm">
+													{att.fileName}
+												</p>
+												<p className="text-slate-500 text-xs uppercase">
+													{att.fileType.split("/")[1] || "FILE"}
+												</p>
+											</div>
+											<div className="flex gap-1">
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8"
+													asChild
+												>
+													<a
+														href={att.fileUrl}
+														target="_blank"
+														rel="noopener noreferrer"
+														title="View"
+													>
+														<Eye className="h-4 w-4" />
+													</a>
+												</Button>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8"
+													asChild
+												>
+													<a
+														href={att.downloadUrl || att.fileUrl}
+														download={att.fileName}
+														title="Download"
+													>
+														<Download className="h-4 w-4" />
+													</a>
+												</Button>
+											</div>
+										</div>
+									))}
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				</div>

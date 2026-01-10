@@ -189,13 +189,13 @@
 		"id": "T-070",
 		"category": "Storage",
 		"task": "Configure Supabase Storage buckets",
-		"status": "pending"
+		"status": "done"
 	},
 	{
 		"id": "T-071",
 		"category": "Storage",
 		"task": "Implement document upload",
-		"status": "pending"
+		"status": "done"
 	},
 	{
 		"id": "T-080",

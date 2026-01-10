@@ -70,6 +70,12 @@ export default function EditRequestPage({
 					priority: request.priority,
 					justification: request.justification,
 					items: request.items,
+					attachments: request.attachments.map((att) => ({
+						url: att.fileUrl,
+						name: att.fileName,
+						type: att.fileType,
+						filePath: att.filePath,
+					})),
 				}}
 				requestId={id}
 			/>

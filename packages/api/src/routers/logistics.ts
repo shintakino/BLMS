@@ -1,9 +1,15 @@
 import { db } from "@BLMS/db";
-import { approvals, requestItems, requests } from "@BLMS/db/schema/logistics";
+import {
+	approvals,
+	requestAttachments,
+	requestItems,
+	requests,
+} from "@BLMS/db/schema/logistics";
 import { ORPCError } from "@orpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { logAudit } from "../lib/audit";
+import { supabaseAdmin } from "../lib/supabase";
 import {
 	protectedProcedure,
 	regionalDirectorProcedure,
@@ -137,6 +143,16 @@ export const logisticsRouter = {
 						category: z.string(),
 					}),
 				),
+				attachments: z.array(
+					z.object({
+						id: z.string(),
+						fileName: z.string(),
+						fileUrl: z.string(),
+						filePath: z.string(),
+						downloadUrl: z.string().optional(),
+						fileType: z.string(),
+					}),
+				),
 				approvals: z.array(
 					z.object({
 						id: z.string(),
@@ -162,6 +178,7 @@ export const logisticsRouter = {
 				where: eq(requests.id, input.id),
 				with: {
 					items: true,
+					attachments: true,
 					creator: true,
 					approvals: {
 						with: {
@@ -189,7 +206,52 @@ export const logisticsRouter = {
 				});
 			}
 
-			return request;
+			// Generate Signed URLs for attachments
+			const attachmentsWithSignedUrls = await Promise.all(
+				request.attachments.map(async (att) => {
+					// Fallback if no admin client, return raw path as filePath and fileUrl
+					if (!supabaseAdmin) {
+						return {
+							...att,
+							filePath: att.fileUrl,
+							fileUrl: att.fileUrl, // Fallback
+						};
+					}
+
+					const { data: viewData, error: viewError } =
+						await supabaseAdmin.storage
+							.from("attachments")
+							.createSignedUrl(att.fileUrl, 3600);
+
+					const { data: downloadData, error: downloadError } =
+						await supabaseAdmin.storage
+							.from("attachments")
+							.createSignedUrl(att.fileUrl, 3600, {
+								download: att.fileName,
+							});
+
+					if (viewError || !viewData || downloadError || !downloadData) {
+						console.error("Failed to sign URL:", viewError || downloadError);
+						return {
+							...att,
+							filePath: att.fileUrl,
+							fileUrl: att.fileUrl, // Fallback
+						};
+					}
+
+					return {
+						...att,
+						filePath: att.fileUrl, // Expose raw path
+						fileUrl: viewData.signedUrl,
+						downloadUrl: downloadData.signedUrl,
+					};
+				}),
+			);
+
+			return {
+				...request,
+				attachments: attachmentsWithSignedUrls,
+			};
 		}),
 
 	getStats: protectedProcedure
@@ -256,6 +318,50 @@ export const logisticsRouter = {
 			return stats;
 		}),
 
+	getUploadUrl: protectedProcedure
+		.input(
+			z.object({
+				fileName: z.string(),
+				fileType: z.string(),
+			}),
+		)
+		.output(
+			z.object({
+				signedUrl: z.string(),
+				path: z.string(),
+				token: z.string(),
+			}),
+		)
+		.handler(async ({ input }) => {
+			if (!supabaseAdmin) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Storage configuration missing",
+				});
+			}
+
+			const sanitizedFileName = input.fileName.replace(
+				/[^a-zA-Z0-9.\-_]/g,
+				"_",
+			);
+			const path = `${crypto.randomUUID()}-${sanitizedFileName}`;
+
+			const { data, error } = await supabaseAdmin.storage
+				.from("attachments")
+				.createSignedUploadUrl(path);
+
+			if (error || !data) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: "Failed to generate upload URL",
+				});
+			}
+
+			return {
+				signedUrl: data.signedUrl,
+				path: data.path,
+				token: data.token,
+			};
+		}),
+
 	create: supplyOfficerProcedure
 		.input(
 			z.object({
@@ -267,6 +373,15 @@ export const logisticsRouter = {
 							itemName: z.string(),
 							quantity: z.number().int().positive(),
 							category: z.string(),
+						}),
+					)
+					.min(1),
+				attachments: z
+					.array(
+						z.object({
+							url: z.string(),
+							name: z.string(),
+							type: z.string(),
 						}),
 					)
 					.min(1),
@@ -344,6 +459,20 @@ export const logisticsRouter = {
 					);
 				}
 
+				if (input.attachments && input.attachments.length > 0) {
+					// We need to import requestAttachments dynamically or at top level if not imported
+					// Assuming imported as 'requestAttachments' from schema
+					await tx.insert(requestAttachments).values(
+						input.attachments.map((file) => ({
+							id: crypto.randomUUID(),
+							requestId: newRequest.id,
+							fileName: file.name,
+							fileUrl: file.url,
+							fileType: file.type,
+						})),
+					);
+				}
+
 				// Log audit event
 				await logAudit({
 					userId: user.id,
@@ -354,6 +483,7 @@ export const logisticsRouter = {
 						priority: input.priority,
 						status: input.status,
 						itemCount: input.items.length,
+						attachmentCount: input.attachments?.length || 0,
 					},
 				});
 
@@ -445,6 +575,28 @@ export const logisticsRouter = {
 				});
 			}
 
+			// 1. Fetch attachments to cleanup
+			const attachments = await db.query.requestAttachments.findMany({
+				where: eq(requestAttachments.requestId, input.requestId),
+			});
+
+			// 2. Delete files from storage if any
+			if (attachments.length > 0 && supabaseAdmin) {
+				const pathsToDelete = attachments.map((att) => att.fileUrl);
+				const { error: removeError } = await supabaseAdmin.storage
+					.from("attachments")
+					.remove(pathsToDelete);
+
+				if (removeError) {
+					console.error(
+						"Failed to cleanup files during deletion:",
+						removeError,
+					);
+					// Continue with DB deletion even if storage cleanup fails,
+					// but ideally this should be reliable.
+				}
+			}
+
 			await db.transaction(async (tx) => {
 				await tx.delete(requests).where(eq(requests.id, input.requestId));
 
@@ -476,6 +628,15 @@ export const logisticsRouter = {
 						}),
 					)
 					.min(1),
+				attachments: z
+					.array(
+						z.object({
+							url: z.string(),
+							name: z.string(),
+							type: z.string(),
+						}),
+					)
+					.default([]),
 				status: z.enum(["DRAFT", "SUBMITTED"]).default("DRAFT"),
 			}),
 		)
@@ -539,13 +700,58 @@ export const logisticsRouter = {
 					);
 				}
 
+				// 1. Identify files to delete (present in DB but not in input)
+				const currentAttachments = await tx
+					.select()
+					.from(requestAttachments)
+					.where(eq(requestAttachments.requestId, input.requestId));
+
+				const inputUrls = new Set(input.attachments.map((a) => a.url));
+				const filesToDelete = currentAttachments.filter(
+					(att) => !inputUrls.has(att.fileUrl),
+				);
+
+				if (filesToDelete.length > 0 && supabaseAdmin) {
+					// Delete from storage
+					const pathsToDelete = filesToDelete.map((att) => att.fileUrl);
+					const { error: removeError } = await supabaseAdmin.storage
+						.from("attachments")
+						.remove(pathsToDelete);
+
+					if (removeError) {
+						console.error("Failed to cleanup files:", removeError);
+						// We continue anyway, not a critical failure for the transaction
+					}
+				}
+
+				// 2. Replace attachments in DB
+				await tx
+					.delete(requestAttachments)
+					.where(eq(requestAttachments.requestId, input.requestId));
+
+				if (input.attachments.length > 0) {
+					await tx.insert(requestAttachments).values(
+						input.attachments.map((file) => ({
+							id: crypto.randomUUID(),
+							requestId: input.requestId,
+							fileName: file.name,
+							fileUrl: file.url,
+							fileType: file.type,
+						})),
+					);
+				}
+
 				// Log audit event
 				await logAudit({
 					userId: user.id,
 					action: "REQUEST_UPDATE",
 					entity: "request",
 					entityId: input.requestId,
-					details: { status: input.status, itemCount: input.items.length },
+					details: {
+						status: input.status,
+						itemCount: input.items.length,
+						removedFiles: filesToDelete.map((f) => f.fileName),
+					},
 				});
 
 				return { success: true, request: { id: input.requestId } };

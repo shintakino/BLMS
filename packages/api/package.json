@@ -19,6 +19,7 @@
 		"@orpc/openapi": "^1.12.2",
 		"@orpc/server": "^1.12.2",
 		"@orpc/zod": "^1.12.2",
+		"@supabase/supabase-js": "^2.90.1",
 		"@types/bcryptjs": "^2.4.6",
 		"bcryptjs": "^3.0.3",
 		"dotenv": "^17.2.2",
