@@ -93,14 +93,16 @@ export default function TransfersPage() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center gap-4">
-				<Button variant="ghost" size="icon" asChild>
-					<Link href="/dashboard">
-						<ArrowLeft className="h-4 w-4" />
-					</Link>
-				</Button>
-				<h2 className="font-bold text-3xl tracking-tight">Asset Transfers</h2>
-				<div className="ml-auto">
+			<div className="flex flex-wrap items-center justify-between gap-4">
+				<div className="flex items-center gap-4">
+					<Button variant="ghost" size="icon" asChild>
+						<Link href="/dashboard">
+							<ArrowLeft className="h-4 w-4" />
+						</Link>
+					</Button>
+					<h2 className="font-bold text-3xl tracking-tight">Asset Transfers</h2>
+				</div>
+				<div className="">
 					{inventoryData && (
 						<AssetTransferDialog
 							assets={inventoryData.assets}
@@ -112,108 +114,120 @@ export default function TransfersPage() {
 			</div>
 
 			<Tabs defaultValue="incoming">
-				<TabsList>
-					<TabsTrigger value="incoming">
-						Incoming ({incomingTransfers.length})
-					</TabsTrigger>
-					<TabsTrigger value="outgoing">
-						Outgoing ({outgoingTransfers.length})
-					</TabsTrigger>
-				</TabsList>
+				<div className="overflow-x-auto pb-1">
+					<TabsList>
+						<TabsTrigger value="incoming">
+							Incoming ({incomingTransfers.length})
+						</TabsTrigger>
+						<TabsTrigger value="outgoing">
+							Outgoing ({outgoingTransfers.length})
+						</TabsTrigger>
+					</TabsList>
+				</div>
 				<TabsContent value="incoming">
 					<Card>
 						<CardHeader>
 							<CardTitle>Incoming Transfers</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Asset</TableHead>
-										<TableHead>From</TableHead>
-										<TableHead>Date</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead>Remarks</TableHead>
-										<TableHead className="text-right">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{incomingPaginated.length === 0 ? (
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
 										<TableRow>
-											<TableCell
-												colSpan={6}
-												className="text-center text-muted-foreground"
-											>
-												No incoming transfers.
-											</TableCell>
+											<TableHead className="whitespace-nowrap">Asset</TableHead>
+											<TableHead className="whitespace-nowrap">From</TableHead>
+											<TableHead className="whitespace-nowrap">Date</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Status
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Remarks
+											</TableHead>
+											<TableHead className="whitespace-nowrap text-right">
+												Actions
+											</TableHead>
 										</TableRow>
-									) : (
-										incomingPaginated.map((t) => (
-											<TableRow key={t.id}>
-												<TableCell>
-													<div className="font-medium">{t.asset.name}</div>
-													<div className="text-muted-foreground text-xs">
-														{t.asset.serialNumber || "No Serial"}
-													</div>
-												</TableCell>
-												<TableCell>{t.fromStation.name}</TableCell>
-												<TableCell>
-													{new Date(t.createdAt).toLocaleDateString()}
-												</TableCell>
-												<TableCell>
-													<Badge
-														variant={
-															t.status === "PENDING"
-																? "secondary"
-																: t.status === "COMPLETED"
-																	? "default"
-																	: "destructive"
-														}
-													>
-														{t.status}
-													</Badge>
-												</TableCell>
-												<TableCell className="max-w-[200px] truncate">
-													{t.remarks || "-"}
-												</TableCell>
-												<TableCell className="text-right">
-													{t.status === "PENDING" && (
-														<div className="flex justify-end gap-2">
-															<Button
-																size="sm"
-																variant="default"
-																className="bg-green-600 hover:bg-green-700"
-																onClick={() =>
-																	completeTransfer.mutate({
-																		transferId: t.id,
-																		action: "COMPLETE",
-																	})
-																}
-																disabled={completeTransfer.isPending}
-															>
-																<Check className="mr-2 h-4 w-4" /> Accept
-															</Button>
-															<Button
-																size="sm"
-																variant="destructive"
-																onClick={() =>
-																	completeTransfer.mutate({
-																		transferId: t.id,
-																		action: "CANCEL",
-																	})
-																}
-																disabled={completeTransfer.isPending}
-															>
-																<X className="mr-2 h-4 w-4" /> Reject
-															</Button>
-														</div>
-													)}
+									</TableHeader>
+									<TableBody>
+										{incomingPaginated.length === 0 ? (
+											<TableRow>
+												<TableCell
+													colSpan={6}
+													className="text-center text-muted-foreground"
+												>
+													No incoming transfers.
 												</TableCell>
 											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
+										) : (
+											incomingPaginated.map((t) => (
+												<TableRow key={t.id}>
+													<TableCell className="whitespace-nowrap">
+														<div className="font-medium">{t.asset.name}</div>
+														<div className="text-muted-foreground text-xs">
+															{t.asset.serialNumber || "No Serial"}
+														</div>
+													</TableCell>
+													<TableCell className="whitespace-nowrap">
+														{t.fromStation.name}
+													</TableCell>
+													<TableCell className="whitespace-nowrap">
+														{new Date(t.createdAt).toLocaleDateString()}
+													</TableCell>
+													<TableCell className="whitespace-nowrap">
+														<Badge
+															variant={
+																t.status === "PENDING"
+																	? "secondary"
+																	: t.status === "COMPLETED"
+																		? "default"
+																		: "destructive"
+															}
+														>
+															{t.status}
+														</Badge>
+													</TableCell>
+													<TableCell className="max-w-[200px] truncate whitespace-nowrap">
+														{t.remarks || "-"}
+													</TableCell>
+													<TableCell className="whitespace-nowrap text-right">
+														{t.status === "PENDING" && (
+															<div className="flex justify-end gap-2">
+																<Button
+																	size="sm"
+																	variant="default"
+																	className="bg-green-600 hover:bg-green-700"
+																	onClick={() =>
+																		completeTransfer.mutate({
+																			transferId: t.id,
+																			action: "COMPLETE",
+																		})
+																	}
+																	disabled={completeTransfer.isPending}
+																>
+																	<Check className="mr-2 h-4 w-4" /> Accept
+																</Button>
+																<Button
+																	size="sm"
+																	variant="destructive"
+																	onClick={() =>
+																		completeTransfer.mutate({
+																			transferId: t.id,
+																			action: "CANCEL",
+																		})
+																	}
+																	disabled={completeTransfer.isPending}
+																>
+																	<X className="mr-2 h-4 w-4" /> Reject
+																</Button>
+															</div>
+														)}
+													</TableCell>
+												</TableRow>
+											))
+										)}
+									</TableBody>
+								</Table>
+							</div>
 							{incomingTotalPages > 1 && (
 								<div className="mt-4">
 									<Pagination>
@@ -266,78 +280,86 @@ export default function TransfersPage() {
 							<CardTitle>Outgoing Transfers</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Asset</TableHead>
-										<TableHead>To</TableHead>
-										<TableHead>Date</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead>Remarks</TableHead>
-										<TableHead className="text-right">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{outgoingPaginated.length === 0 ? (
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
 										<TableRow>
-											<TableCell
-												colSpan={6}
-												className="text-center text-muted-foreground"
-											>
-												No outgoing transfers.
-											</TableCell>
+											<TableHead className="whitespace-nowrap">Asset</TableHead>
+											<TableHead className="whitespace-nowrap">To</TableHead>
+											<TableHead className="whitespace-nowrap">Date</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Status
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Remarks
+											</TableHead>
+											<TableHead className="whitespace-nowrap text-right">
+												Actions
+											</TableHead>
 										</TableRow>
-									) : (
-										outgoingPaginated.map((t) => (
-											<TableRow key={t.id}>
-												<TableCell>
-													<div className="font-medium">{t.asset.name}</div>
-													<div className="text-muted-foreground text-xs">
-														{t.asset.serialNumber || "No Serial"}
-													</div>
-												</TableCell>
-												<TableCell>{t.toStation.name}</TableCell>
-												<TableCell>
-													{new Date(t.createdAt).toLocaleDateString()}
-												</TableCell>
-												<TableCell>
-													<Badge
-														variant={
-															t.status === "PENDING"
-																? "secondary"
-																: t.status === "COMPLETED"
-																	? "default"
-																	: "destructive"
-														}
-													>
-														{t.status}
-													</Badge>
-												</TableCell>
-												<TableCell className="max-w-[200px] truncate">
-													{t.remarks || "-"}
-												</TableCell>
-												<TableCell className="text-right">
-													{t.status === "PENDING" && (
-														<Button
-															size="sm"
-															variant="destructive"
-															onClick={() =>
-																completeTransfer.mutate({
-																	transferId: t.id,
-																	action: "CANCEL",
-																})
-															}
-															disabled={completeTransfer.isPending}
-														>
-															<X className="mr-2 h-4 w-4" /> Cancel
-														</Button>
-													)}
+									</TableHeader>
+									<TableBody>
+										{outgoingPaginated.length === 0 ? (
+											<TableRow>
+												<TableCell
+													colSpan={6}
+													className="text-center text-muted-foreground"
+												>
+													No outgoing transfers.
 												</TableCell>
 											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
+										) : (
+											outgoingPaginated.map((t) => (
+												<TableRow key={t.id}>
+													<TableCell>
+														<div className="font-medium">{t.asset.name}</div>
+														<div className="text-muted-foreground text-xs">
+															{t.asset.serialNumber || "No Serial"}
+														</div>
+													</TableCell>
+													<TableCell>{t.toStation.name}</TableCell>
+													<TableCell>
+														{new Date(t.createdAt).toLocaleDateString()}
+													</TableCell>
+													<TableCell>
+														<Badge
+															variant={
+																t.status === "PENDING"
+																	? "secondary"
+																	: t.status === "COMPLETED"
+																		? "default"
+																		: "destructive"
+															}
+														>
+															{t.status}
+														</Badge>
+													</TableCell>
+													<TableCell className="max-w-[200px] truncate">
+														{t.remarks || "-"}
+													</TableCell>
+													<TableCell className="text-right">
+														{t.status === "PENDING" && (
+															<Button
+																size="sm"
+																variant="destructive"
+																onClick={() =>
+																	completeTransfer.mutate({
+																		transferId: t.id,
+																		action: "CANCEL",
+																	})
+																}
+																disabled={completeTransfer.isPending}
+															>
+																<X className="mr-2 h-4 w-4" /> Cancel
+															</Button>
+														)}
+													</TableCell>
+												</TableRow>
+											))
+										)}
+									</TableBody>
+								</Table>
+							</div>
 							{outgoingTotalPages > 1 && (
 								<div className="mt-4">
 									<Pagination>

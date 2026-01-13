@@ -82,12 +82,12 @@ export default function RegionalDirectorDashboard({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h2 className="font-bold text-3xl tracking-tight">Regional Director</h2>
 				<p className="text-muted-foreground">Welcome, {session.user.name}</p>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="font-medium text-sm">
@@ -178,7 +178,7 @@ export default function RegionalDirectorDashboard({
 				</Link>
 			</div>
 
-			<Card className="col-span-2">
+			<Card className="col-span-1 sm:col-span-2 lg:col-span-4">
 				<CardHeader>
 					<CardTitle>Approvals Required</CardTitle>
 				</CardHeader>
@@ -190,78 +190,92 @@ export default function RegionalDirectorDashboard({
 						</div>
 					) : requests && requests.length > 0 ? (
 						<div className="space-y-4">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Request ID</TableHead>
-										<TableHead>Station</TableHead>
-										<TableHead>Priority</TableHead>
-										<TableHead>Reviewed By</TableHead>
-										<TableHead>Date</TableHead>
-										<TableHead className="text-right">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{requests.map((request) => (
-										<TableRow key={request.id}>
-											<TableCell className="font-medium">
-												<Link
-													href={
-														/* biome-ignore lint/suspicious/noExplicitAny: cast required for dynamic route */
-														`/requests/${request.id}` as any
-													}
-													className="hover:underline"
-												>
-													{request.id.substring(0, 8)}...
-												</Link>
-											</TableCell>
-											<TableCell>
-												{request.station?.name || request.stationId}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant={
-														request.priority === "CRITICAL"
-															? "destructive"
-															: "outline"
-													}
-												>
-													{request.priority}
-												</Badge>
-											</TableCell>
-											<TableCell>{request.reviewer?.name || "-"}</TableCell>
-											<TableCell>
-												{new Date(request.createdAt).toLocaleDateString()}
-											</TableCell>
-											<TableCell className="flex justify-end gap-2">
-												<Button variant="outline" size="sm" asChild>
-													<Link
-														href={`/requests/${request.id}`}
-														onMouseEnter={() => {
-															queryClient.prefetchQuery({
-																queryKey: ["request", request.id],
-																queryFn: async () =>
-																	await client.logistics.get({
-																		id: request.id,
-																	}),
-																staleTime: 1000 * 60 * 5,
-															});
-														}}
-													>
-														<Eye className="mr-2 h-4 w-4" />
-														View
-													</Link>
-												</Button>
-												<RequestActions
-													requestId={request.id}
-													currentStatus={request.status}
-													userRole="regional-director"
-												/>
-											</TableCell>
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="whitespace-nowrap">
+												Request ID
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Station
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Priority
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Reviewed By
+											</TableHead>
+											<TableHead className="whitespace-nowrap">Date</TableHead>
+											<TableHead className="whitespace-nowrap text-right">
+												Actions
+											</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+									</TableHeader>
+									<TableBody>
+										{requests.map((request) => (
+											<TableRow key={request.id}>
+												<TableCell className="whitespace-nowrap font-medium">
+													<Link
+														href={
+															/* biome-ignore lint/suspicious/noExplicitAny: cast required for dynamic route */
+															`/requests/${request.id}` as any
+														}
+														className="hover:underline"
+													>
+														{request.id.substring(0, 8)}...
+													</Link>
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													{request.station?.name || request.stationId}
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													<Badge
+														variant={
+															request.priority === "CRITICAL"
+																? "destructive"
+																: "outline"
+														}
+													>
+														{request.priority}
+													</Badge>
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													{request.reviewer?.name || "-"}
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													{new Date(request.createdAt).toLocaleDateString()}
+												</TableCell>
+												<TableCell className="flex justify-end gap-2">
+													<Button variant="outline" size="sm" asChild>
+														<Link
+															href={`/requests/${request.id}`}
+															onMouseEnter={() => {
+																queryClient.prefetchQuery({
+																	queryKey: ["request", request.id],
+																	queryFn: async () =>
+																		await client.logistics.get({
+																			id: request.id,
+																		}),
+																	staleTime: 1000 * 60 * 5,
+																});
+															}}
+														>
+															<Eye className="mr-2 h-4 w-4" />
+															View
+														</Link>
+													</Button>
+													<RequestActions
+														requestId={request.id}
+														currentStatus={request.status}
+														userRole="regional-director"
+													/>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
 
 							<Pagination>
 								<PaginationContent>

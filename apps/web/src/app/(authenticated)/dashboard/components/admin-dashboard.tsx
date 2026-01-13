@@ -30,14 +30,14 @@ export default function AdminDashboard({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h2 className="font-bold text-3xl tracking-tight">
 					System Administration
 				</h2>
 				<p className="text-muted-foreground">Welcome, {session.user.name}</p>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="font-medium text-sm">Total Users</CardTitle>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function SettingsPage() {
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-col gap-2">
 				<h2 className="font-bold text-3xl tracking-tight">Settings</h2>
 				<p className="text-muted-foreground">Manage application settings</p>
 			</div>

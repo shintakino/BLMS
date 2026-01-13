@@ -118,11 +118,11 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 		<form onSubmit={handleSubmit} className="space-y-4">
 			<div className="grid gap-4 py-4">
 				{/* Name */}
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="name" className="text-right">
+				<div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
+					<Label htmlFor="name" className="text-left sm:text-right">
 						Name
 					</Label>
-					<div className="col-span-3">
+					<div className="sm:col-span-3">
 						<Input
 							id="name"
 							value={name}
@@ -134,11 +134,11 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 				</div>
 
 				{/* Email */}
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="email" className="text-right">
+				<div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
+					<Label htmlFor="email" className="text-left sm:text-right">
 						Email
 					</Label>
-					<div className="col-span-3">
+					<div className="sm:col-span-3">
 						<Input
 							id="email"
 							type="email"
@@ -153,11 +153,11 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 				{/* Password (only for new users) */}
 				{!isEdit && (
 					<>
-						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="password" className="text-right">
+						<div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
+							<Label htmlFor="password" className="text-left sm:text-right">
 								Password
 							</Label>
-							<div className="col-span-3">
+							<div className="sm:col-span-3">
 								<Input
 									id="password"
 									type="password"
@@ -169,11 +169,14 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 								/>
 							</div>
 						</div>
-						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="confirmPassword" className="text-right">
+						<div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
+							<Label
+								htmlFor="confirmPassword"
+								className="text-left sm:text-right"
+							>
 								Confirm
 							</Label>
-							<div className="col-span-3">
+							<div className="sm:col-span-3">
 								<Input
 									id="confirmPassword"
 									type="password"
@@ -193,11 +196,11 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 				)}
 
 				{/* Role */}
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="role" className="text-right">
+				<div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
+					<Label htmlFor="role" className="text-left sm:text-right">
 						Role
 					</Label>
-					<div className="col-span-3">
+					<div className="sm:col-span-3">
 						<Select value={role} onValueChange={(val) => setRole(val ?? "")}>
 							<SelectTrigger className="w-full">
 								<SelectValue />
@@ -221,11 +224,11 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
 				{/* Station (only for station roles) - Searchable */}
 				{isStationRole && (
-					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="station" className="text-right">
+					<div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
+						<Label htmlFor="station" className="text-left sm:text-right">
 							Station
 						</Label>
-						<div className="col-span-3">
+						<div className="sm:col-span-3">
 							<Popover
 								open={stationSearchOpen}
 								onOpenChange={setStationSearchOpen}

@@ -133,7 +133,7 @@ export default function AuditLogsPage() {
 	return (
 		<div className="mx-auto max-w-7xl space-y-6">
 			{/* Header Section */}
-			<div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h2 className="flex items-center gap-2 font-bold text-3xl tracking-tight">
 						<ShieldCheck className="h-8 w-8 text-primary" />
@@ -213,169 +213,185 @@ export default function AuditLogsPage() {
 
 				{/* Main Table Card */}
 				<Card className="overflow-hidden border-muted/60 shadow-md">
-					<Table>
-						<TableHeader className="bg-muted/40">
-							<TableRow>
-								<TableHead className="w-[180px]">Timestamp</TableHead>
-								<TableHead className="w-[200px]">User</TableHead>
-								<TableHead className="w-[150px]">Action</TableHead>
-								<TableHead className="w-[150px]">Entity</TableHead>
-								<TableHead className="w-[150px]">Entity ID</TableHead>
-								<TableHead className="text-right">Details</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{isLoading ? (
+					<div className="overflow-x-auto">
+						<Table>
+							<TableHeader className="bg-muted/40">
 								<TableRow>
-									<TableCell colSpan={6} className="h-32 text-center">
-										<div className="flex flex-col items-center justify-center gap-2">
-											<Loader2 className="h-8 w-8 animate-spin text-primary" />
-											<span className="text-muted-foreground text-sm">
-												Loading audit logs...
-											</span>
-										</div>
-									</TableCell>
+									<TableHead className="w-[180px] whitespace-nowrap">
+										Timestamp
+									</TableHead>
+									<TableHead className="w-[200px] whitespace-nowrap">
+										User
+									</TableHead>
+									<TableHead className="w-[150px] whitespace-nowrap">
+										Action
+									</TableHead>
+									<TableHead className="w-[150px] whitespace-nowrap">
+										Entity
+									</TableHead>
+									<TableHead className="w-[150px] whitespace-nowrap">
+										Entity ID
+									</TableHead>
+									<TableHead className="whitespace-nowrap text-right">
+										Details
+									</TableHead>
 								</TableRow>
-							) : logs.length === 0 ? (
-								<TableRow>
-									<TableCell
-										colSpan={6}
-										className="h-32 text-center text-muted-foreground"
-									>
-										No audit logs matching your filters.
-									</TableCell>
-								</TableRow>
-							) : (
-								logs.map((log) => (
-									<TableRow
-										key={log.id}
-										className="transition-colors hover:bg-muted/30"
-									>
-										<TableCell>
-											<div className="flex flex-col gap-0.5">
-												<span className="font-medium text-sm">
-													{format(new Date(log.createdAt), "MMM d, yyyy")}
-												</span>
-												<span className="flex items-center gap-1 text-muted-foreground text-xs">
-													<Calendar className="h-3 w-3" />
-													{format(new Date(log.createdAt), "HH:mm:ss")}
+							</TableHeader>
+							<TableBody>
+								{isLoading ? (
+									<TableRow>
+										<TableCell colSpan={6} className="h-32 text-center">
+											<div className="flex flex-col items-center justify-center gap-2">
+												<Loader2 className="h-8 w-8 animate-spin text-primary" />
+												<span className="text-muted-foreground text-sm">
+													Loading audit logs...
 												</span>
 											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex flex-col gap-0.5">
-												<div className="flex items-center gap-1.5 font-medium text-sm">
-													<User className="h-3.5 w-3.5 text-muted-foreground" />
-													{log.userName || "System / Unknown"}
-												</div>
-												<span className="pl-5 text-muted-foreground text-xs">
-													{log.userEmail}
-												</span>
-											</div>
-										</TableCell>
-										<TableCell>
-											<Badge
-												variant={getActionBadgeVariant(log.action)}
-												className="shadow-sm"
-											>
-												{formatAction(log.action)}
-											</Badge>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-2">
-												<span className="font-medium text-sm capitalize">
-													{log.entity}
-												</span>
-											</div>
-										</TableCell>
-										<TableCell>
-											<code className="rounded bg-muted px-2 py-1 font-mono text-muted-foreground text-xs">
-												{log.entityId.slice(0, 8)}...
-											</code>
-										</TableCell>
-										<TableCell className="text-right">
-											<Sheet>
-												<SheetTrigger className="inline-flex h-8 w-8 items-center justify-center whitespace-nowrap rounded-md font-medium text-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-													<Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-													<span className="sr-only">View Details</span>
-												</SheetTrigger>
-												<SheetContent className="w-[400px] sm:w-[540px]">
-													<SheetHeader>
-														<SheetTitle className="flex items-center gap-2">
-															<ShieldCheck className="h-5 w-5" />
-															Audit Log Details
-														</SheetTitle>
-														<SheetDescription>
-															Event ID:{" "}
-															<code className="text-xs">{log.id}</code>
-														</SheetDescription>
-													</SheetHeader>
-													<Separator className="my-6" />
-													<div className="space-y-6">
-														<div className="grid grid-cols-2 gap-4">
-															<div className="space-y-1">
-																<span className="font-medium text-muted-foreground text-xs">
-																	Action Type
-																</span>
-																<div>
-																	<Badge
-																		variant={getActionBadgeVariant(log.action)}
-																	>
-																		{formatAction(log.action)}
-																	</Badge>
-																</div>
-															</div>
-															<div className="space-y-1">
-																<span className="font-medium text-muted-foreground text-xs">
-																	Target Entity
-																</span>
-																<div className="flex items-center gap-2 font-medium capitalize">
-																	<Database className="h-3.5 w-3.5 text-muted-foreground" />
-																	{log.entity}
-																</div>
-															</div>
-															<div className="space-y-1">
-																<span className="font-medium text-muted-foreground text-xs">
-																	Performed By
-																</span>
-																<div className="font-medium text-sm">
-																	{log.userName}
-																</div>
-																<div className="text-muted-foreground text-xs">
-																	{log.userEmail}
-																</div>
-															</div>
-															<div className="space-y-1">
-																<span className="font-medium text-muted-foreground text-xs">
-																	Date & Time
-																</span>
-																<div className="text-sm">
-																	{format(new Date(log.createdAt), "PPpp")}
-																</div>
-															</div>
-														</div>
-
-														<div className="space-y-2">
-															<span className="font-medium text-muted-foreground text-xs">
-																Change Details (JSON)
-															</span>
-															<div className="rounded-md border bg-muted/50 p-4 font-mono text-xs">
-																<ScrollArea className="h-[200px] w-full">
-																	<pre>
-																		{JSON.stringify(log.details, null, 2)}
-																	</pre>
-																</ScrollArea>
-															</div>
-														</div>
-													</div>
-												</SheetContent>
-											</Sheet>
 										</TableCell>
 									</TableRow>
-								))
-							)}
-						</TableBody>
-					</Table>
+								) : logs.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={6}
+											className="h-32 text-center text-muted-foreground"
+										>
+											No audit logs matching your filters.
+										</TableCell>
+									</TableRow>
+								) : (
+									logs.map((log) => (
+										<TableRow
+											key={log.id}
+											className="transition-colors hover:bg-muted/30"
+										>
+											<TableCell>
+												<div className="flex flex-col gap-0.5">
+													<span className="font-medium text-sm">
+														{format(new Date(log.createdAt), "MMM d, yyyy")}
+													</span>
+													<span className="flex items-center gap-1 text-muted-foreground text-xs">
+														<Calendar className="h-3 w-3" />
+														{format(new Date(log.createdAt), "HH:mm:ss")}
+													</span>
+												</div>
+											</TableCell>
+											<TableCell>
+												<div className="flex flex-col gap-0.5">
+													<div className="flex items-center gap-1.5 font-medium text-sm">
+														<User className="h-3.5 w-3.5 text-muted-foreground" />
+														{log.userName || "System / Unknown"}
+													</div>
+													<span className="pl-5 text-muted-foreground text-xs">
+														{log.userEmail}
+													</span>
+												</div>
+											</TableCell>
+											<TableCell>
+												<Badge
+													variant={getActionBadgeVariant(log.action)}
+													className="shadow-sm"
+												>
+													{formatAction(log.action)}
+												</Badge>
+											</TableCell>
+											<TableCell>
+												<div className="flex items-center gap-2">
+													<span className="font-medium text-sm capitalize">
+														{log.entity}
+													</span>
+												</div>
+											</TableCell>
+											<TableCell>
+												<code className="rounded bg-muted px-2 py-1 font-mono text-muted-foreground text-xs">
+													{log.entityId.slice(0, 8)}...
+												</code>
+											</TableCell>
+											<TableCell className="text-right">
+												<Sheet>
+													<SheetTrigger className="inline-flex h-8 w-8 items-center justify-center whitespace-nowrap rounded-md font-medium text-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+														<Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+														<span className="sr-only">View Details</span>
+													</SheetTrigger>
+													<SheetContent className="w-[400px] sm:w-[540px]">
+														<SheetHeader>
+															<SheetTitle className="flex items-center gap-2">
+																<ShieldCheck className="h-5 w-5" />
+																Audit Log Details
+															</SheetTitle>
+															<SheetDescription>
+																Event ID:{" "}
+																<code className="text-xs">{log.id}</code>
+															</SheetDescription>
+														</SheetHeader>
+														<Separator className="my-6" />
+														<div className="space-y-6">
+															<div className="grid grid-cols-2 gap-4">
+																<div className="space-y-1">
+																	<span className="font-medium text-muted-foreground text-xs">
+																		Action Type
+																	</span>
+																	<div>
+																		<Badge
+																			variant={getActionBadgeVariant(
+																				log.action,
+																			)}
+																		>
+																			{formatAction(log.action)}
+																		</Badge>
+																	</div>
+																</div>
+																<div className="space-y-1">
+																	<span className="font-medium text-muted-foreground text-xs">
+																		Target Entity
+																	</span>
+																	<div className="flex items-center gap-2 font-medium capitalize">
+																		<Database className="h-3.5 w-3.5 text-muted-foreground" />
+																		{log.entity}
+																	</div>
+																</div>
+																<div className="space-y-1">
+																	<span className="font-medium text-muted-foreground text-xs">
+																		Performed By
+																	</span>
+																	<div className="font-medium text-sm">
+																		{log.userName}
+																	</div>
+																	<div className="text-muted-foreground text-xs">
+																		{log.userEmail}
+																	</div>
+																</div>
+																<div className="space-y-1">
+																	<span className="font-medium text-muted-foreground text-xs">
+																		Date & Time
+																	</span>
+																	<div className="text-sm">
+																		{format(new Date(log.createdAt), "PPpp")}
+																	</div>
+																</div>
+															</div>
+
+															<div className="space-y-2">
+																<span className="font-medium text-muted-foreground text-xs">
+																	Change Details (JSON)
+																</span>
+																<div className="rounded-md border bg-muted/50 p-4 font-mono text-xs">
+																	<ScrollArea className="h-[200px] w-full">
+																		<pre>
+																			{JSON.stringify(log.details, null, 2)}
+																		</pre>
+																	</ScrollArea>
+																</div>
+															</div>
+														</div>
+													</SheetContent>
+												</Sheet>
+											</TableCell>
+										</TableRow>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
 				</Card>
 
 				{/* Pagination */}

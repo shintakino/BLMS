@@ -57,7 +57,7 @@ export default function StationsPage() {
 			</div>
 
 			<Card>
-				<CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<CardHeader className="flex flex-wrap items-center justify-between gap-4">
 					<CardTitle>Stations Directory</CardTitle>
 					<div className="relative w-full sm:w-64">
 						<Search className="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
@@ -80,40 +80,46 @@ export default function StationsPage() {
 						</div>
 					) : paginatedStations && paginatedStations.length > 0 ? (
 						<div className="space-y-4">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Station Name</TableHead>
-										<TableHead>ID</TableHead>
-										<TableHead className="text-right">Action</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{paginatedStations.map((station) => (
-										<TableRow key={station.id}>
-											<TableCell className="flex items-center gap-2 font-medium">
-												<MapPin className="h-4 w-4 text-muted-foreground" />
-												{station.name}
-											</TableCell>
-											<TableCell className="font-mono text-muted-foreground text-xs">
-												{station.id}
-											</TableCell>
-											<TableCell className="text-right">
-												<Button variant="outline" size="sm" asChild>
-													<Link
-														href={
-															/* biome-ignore lint/suspicious/noExplicitAny: dynamic route */
-															`/stations/${station.id}` as any
-														}
-													>
-														View Details
-													</Link>
-												</Button>
-											</TableCell>
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="whitespace-nowrap">
+												Station Name
+											</TableHead>
+											<TableHead className="whitespace-nowrap">ID</TableHead>
+											<TableHead className="whitespace-nowrap text-right">
+												Action
+											</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+									</TableHeader>
+									<TableBody>
+										{paginatedStations.map((station) => (
+											<TableRow key={station.id}>
+												<TableCell className="flex items-center gap-2 font-medium">
+													<MapPin className="h-4 w-4 text-muted-foreground" />
+													{station.name}
+												</TableCell>
+												<TableCell className="font-mono text-muted-foreground text-xs">
+													{station.id}
+												</TableCell>
+												<TableCell className="text-right">
+													<Button variant="outline" size="sm" asChild>
+														<Link
+															href={
+																/* biome-ignore lint/suspicious/noExplicitAny: dynamic route */
+																`/stations/${station.id}` as any
+															}
+														>
+															View Details
+														</Link>
+													</Button>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
 
 							{totalPages > 1 && (
 								<Pagination>

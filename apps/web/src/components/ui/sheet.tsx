@@ -1,6 +1,6 @@
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "lucide-react";
-import type * as React from "react";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -8,8 +8,25 @@ function Sheet({ ...props }: SheetPrimitive.Root.Props) {
 	return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
-function SheetTrigger({ ...props }: SheetPrimitive.Trigger.Props) {
-	return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
+function SheetTrigger({
+	asChild,
+	children,
+	...props
+}: SheetPrimitive.Trigger.Props & { asChild?: boolean }) {
+	if (asChild && React.isValidElement(children)) {
+		return (
+			<SheetPrimitive.Trigger
+				data-slot="sheet-trigger"
+				render={children}
+				{...props}
+			/>
+		);
+	}
+	return (
+		<SheetPrimitive.Trigger data-slot="sheet-trigger" {...props}>
+			{children}
+		</SheetPrimitive.Trigger>
+	);
 }
 
 function SheetClose({ ...props }: SheetPrimitive.Close.Props) {

@@ -112,7 +112,7 @@ export function StationInventoryTable({
 
 	return (
 		<Card>
-			<CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<CardHeader className="flex flex-wrap items-center justify-between gap-4">
 				<div className="space-y-1">
 					<CardTitle>{title}</CardTitle>
 					<CardDescription>
@@ -140,58 +140,68 @@ export function StationInventoryTable({
 				</div>
 			</CardHeader>
 			<CardContent>
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Item Name</TableHead>
-							<TableHead>Type</TableHead>
-							<TableHead>Category</TableHead>
-							<TableHead>Quantity</TableHead>
-							<TableHead>Assets Status</TableHead>
-							{!readOnly && (
-								<TableHead className="text-right">Actions</TableHead>
-							)}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{paginatedItems.length === 0 ? (
+				<div className="overflow-x-auto">
+					<Table>
+						<TableHeader>
 							<TableRow>
-								<TableCell
-									colSpan={readOnly ? 5 : 6}
-									className="p-8 text-center text-muted-foreground"
-								>
-									No items found.
-								</TableCell>
+								<TableHead>Item Name</TableHead>
+								<TableHead>Type</TableHead>
+								<TableHead>Category</TableHead>
+								<TableHead>Quantity</TableHead>
+								<TableHead>Assets Status</TableHead>
+								{!readOnly && (
+									<TableHead className="text-right">Actions</TableHead>
+								)}
 							</TableRow>
-						) : (
-							paginatedItems.map((item: InventoryItem) => (
-								<TableRow key={item.id}>
-									<TableCell className="font-medium">{item.itemName}</TableCell>
-									<TableCell>
-										<Badge
-											variant={item.type === "Asset" ? "secondary" : "outline"}
-										>
-											{item.type}
-										</Badge>
+						</TableHeader>
+						<TableBody>
+							{paginatedItems.length === 0 ? (
+								<TableRow>
+									<TableCell
+										colSpan={readOnly ? 5 : 6}
+										className="p-8 text-center text-muted-foreground"
+									>
+										No items found.
 									</TableCell>
-									<TableCell>{item.category}</TableCell>
-									<TableCell>
-										{item.quantity} {item.unit}
-									</TableCell>
-									<TableCell>{item.status || "Good"}</TableCell>
-									{!readOnly && (
-										<TableCell className="text-right">
-											{item.type === "Supply" && (
-												<AdjustStockDialog item={item} />
-											)}
-											{item.type === "Asset" && <AssetActions item={item} />}
-										</TableCell>
-									)}
 								</TableRow>
-							))
-						)}
-					</TableBody>
-				</Table>
+							) : (
+								paginatedItems.map((item: InventoryItem) => (
+									<TableRow key={item.id}>
+										<TableCell className="whitespace-nowrap font-medium">
+											{item.itemName}
+										</TableCell>
+										<TableCell>
+											<Badge
+												variant={
+													item.type === "Asset" ? "secondary" : "outline"
+												}
+											>
+												{item.type}
+											</Badge>
+										</TableCell>
+										<TableCell className="whitespace-nowrap">
+											{item.category}
+										</TableCell>
+										<TableCell className="whitespace-nowrap">
+											{item.quantity} {item.unit}
+										</TableCell>
+										<TableCell className="whitespace-nowrap">
+											{item.status || "Good"}
+										</TableCell>
+										{!readOnly && (
+											<TableCell className="text-right">
+												{item.type === "Supply" && (
+													<AdjustStockDialog item={item} />
+												)}
+												{item.type === "Asset" && <AssetActions item={item} />}
+											</TableCell>
+										)}
+									</TableRow>
+								))
+							)}
+						</TableBody>
+					</Table>
+				</div>
 
 				{totalPages > 1 && (
 					<div className="mt-4 flex justify-center">

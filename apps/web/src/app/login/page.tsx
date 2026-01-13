@@ -48,6 +48,17 @@ export default function LoginPage() {
 			{/* Right Side - Form */}
 			<div className="lg:p-8">
 				<div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+					<div className="flex flex-col space-y-2 text-center lg:hidden">
+						{/* Mobile Logo */}
+						<div className="relative mx-auto mb-4 h-16 w-16">
+							<Image
+								src="/images/bfpRegion12Logo.png"
+								alt="BFP Region 12 Logo"
+								fill
+								className="object-contain"
+							/>
+						</div>
+					</div>
 					{showSignIn ? (
 						<SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
 					) : (

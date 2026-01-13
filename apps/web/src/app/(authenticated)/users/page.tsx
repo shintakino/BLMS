@@ -150,7 +150,7 @@ export default function UsersPage() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div>
 					<h2 className="font-bold text-3xl tracking-tight">User Management</h2>
 					<p className="text-muted-foreground">
@@ -175,108 +175,112 @@ export default function UsersPage() {
 
 			{/* Table */}
 			<div className="rounded-md border bg-card">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Name</TableHead>
-							<TableHead>Email</TableHead>
-							<TableHead>Role</TableHead>
-							<TableHead>Station/Location</TableHead>
-							<TableHead>Created At</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{isLoading ? (
+				<div className="overflow-x-auto">
+					<Table>
+						<TableHeader>
 							<TableRow>
-								<TableCell colSpan={6} className="h-24 text-center">
-									<Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
-								</TableCell>
+								<TableHead>Name</TableHead>
+								<TableHead>Email</TableHead>
+								<TableHead>Role</TableHead>
+								<TableHead>Station/Location</TableHead>
+								<TableHead>Created At</TableHead>
+								<TableHead className="text-right">Actions</TableHead>
 							</TableRow>
-						) : paginatedUsers.length === 0 ? (
-							<TableRow>
-								<TableCell
-									colSpan={6}
-									className="h-24 text-center text-muted-foreground"
-								>
-									No users found.
-								</TableCell>
-							</TableRow>
-						) : (
-							paginatedUsers.map((user) => (
-								<TableRow key={user.id}>
-									<TableCell className="font-medium">
-										{user.name || "N/A"}
-									</TableCell>
-									<TableCell>{user.email}</TableCell>
-									<TableCell>
-										<Badge variant="outline" className="capitalize">
-											{user.role?.replace(/-/g, " ") || "No Role"}
-										</Badge>
-									</TableCell>
-									<TableCell>
-										{user.stationId ? (
-											<span className="text-sm">
-												{stationMap.get(user.stationId) || user.stationId}
-											</span>
-										) : user.provinceId ? (
-											<span className="text-muted-foreground text-sm">
-												Regional
-											</span>
-										) : (
-											<span className="text-muted-foreground">-</span>
-										)}
-									</TableCell>
-									<TableCell className="text-muted-foreground text-xs">
-										{format(new Date(user.createdAt), "MMM d, yyyy")}
-									</TableCell>
-									<TableCell className="text-right">
-										<DropdownMenu>
-											<DropdownMenuTrigger className="inline-flex h-8 w-8 items-center justify-center whitespace-nowrap rounded-md font-medium text-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-												<span className="sr-only">Open menu</span>
-												<MoreHorizontal className="h-4 w-4" />
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align="end">
-												<DropdownMenuGroup>
-													<DropdownMenuLabel>Actions</DropdownMenuLabel>
-													<DropdownMenuItem
-														onClick={() => {
-															navigator.clipboard.writeText(user.id);
-															toast.success("User ID copied to clipboard");
-														}}
-													>
-														<Copy className="mr-2 h-4 w-4" />
-														Copy ID
-													</DropdownMenuItem>
-													<DropdownMenuSeparator />
-													<DropdownMenuItem
-														onClick={() => setEditingUser(user)}
-													>
-														<UserCog className="mr-2 h-4 w-4" />
-														Edit Details
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() => setDeletingUser(user)}
-														className="appearance-none text-destructive focus:text-destructive"
-													>
-														<Trash2 className="mr-2 h-4 w-4" />
-														Delete Account
-													</DropdownMenuItem>
-												</DropdownMenuGroup>
-											</DropdownMenuContent>
-										</DropdownMenu>
+						</TableHeader>
+						<TableBody>
+							{isLoading ? (
+								<TableRow>
+									<TableCell colSpan={6} className="h-24 text-center">
+										<Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
 									</TableCell>
 								</TableRow>
-							))
-						)}
-					</TableBody>
-				</Table>
+							) : paginatedUsers.length === 0 ? (
+								<TableRow>
+									<TableCell
+										colSpan={6}
+										className="h-24 text-center text-muted-foreground"
+									>
+										No users found.
+									</TableCell>
+								</TableRow>
+							) : (
+								paginatedUsers.map((user) => (
+									<TableRow key={user.id}>
+										<TableCell className="whitespace-nowrap font-medium">
+											{user.name || "N/A"}
+										</TableCell>
+										<TableCell className="whitespace-nowrap">
+											{user.email}
+										</TableCell>
+										<TableCell>
+											<Badge variant="outline" className="capitalize">
+												{user.role?.replace(/-/g, " ") || "No Role"}
+											</Badge>
+										</TableCell>
+										<TableCell>
+											{user.stationId ? (
+												<span className="text-sm">
+													{stationMap.get(user.stationId) || user.stationId}
+												</span>
+											) : user.provinceId ? (
+												<span className="text-muted-foreground text-sm">
+													Regional
+												</span>
+											) : (
+												<span className="text-muted-foreground">-</span>
+											)}
+										</TableCell>
+										<TableCell className="text-muted-foreground text-xs">
+											{format(new Date(user.createdAt), "MMM d, yyyy")}
+										</TableCell>
+										<TableCell className="text-right">
+											<DropdownMenu>
+												<DropdownMenuTrigger className="inline-flex h-8 w-8 items-center justify-center whitespace-nowrap rounded-md font-medium text-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+													<span className="sr-only">Open menu</span>
+													<MoreHorizontal className="h-4 w-4" />
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end">
+													<DropdownMenuGroup>
+														<DropdownMenuLabel>Actions</DropdownMenuLabel>
+														<DropdownMenuItem
+															onClick={() => {
+																navigator.clipboard.writeText(user.id);
+																toast.success("User ID copied to clipboard");
+															}}
+														>
+															<Copy className="mr-2 h-4 w-4" />
+															Copy ID
+														</DropdownMenuItem>
+														<DropdownMenuSeparator />
+														<DropdownMenuItem
+															onClick={() => setEditingUser(user)}
+														>
+															<UserCog className="mr-2 h-4 w-4" />
+															Edit Details
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() => setDeletingUser(user)}
+															className="appearance-none text-destructive focus:text-destructive"
+														>
+															<Trash2 className="mr-2 h-4 w-4" />
+															Delete Account
+														</DropdownMenuItem>
+													</DropdownMenuGroup>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</TableCell>
+									</TableRow>
+								))
+							)}
+						</TableBody>
+					</Table>
+				</div>
 			</div>
 
 			{/* Pagination */}
 			{totalPages > 1 && (
-				<div className="flex items-center justify-between">
-					<p className="text-muted-foreground text-sm">
+				<div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+					<p className="text-center text-muted-foreground text-sm sm:text-left">
 						Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
 						{Math.min(currentPage * ITEMS_PER_PAGE, totalUsers)} of {totalUsers}{" "}
 						users

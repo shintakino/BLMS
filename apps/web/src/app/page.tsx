@@ -124,7 +124,7 @@ export default function LandingPage() {
 
 					<motion.h1
 						variants={fadeInUp}
-						className="mb-4 font-extrabold text-4xl leading-tight tracking-tight drop-shadow-2xl lg:text-7xl"
+						className="mb-4 font-extrabold text-4xl leading-tight tracking-tight drop-shadow-2xl md:text-5xl lg:text-7xl"
 					>
 						Bureau of Fire Protection
 						<span className="mt-2 block bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">

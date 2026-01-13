@@ -122,7 +122,7 @@ function RegionalInventoryManager() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<div className="w-[300px]">
+					<div className="w-full sm:w-[300px]">
 						<Popover open={open} onOpenChange={setOpen}>
 							<PopoverTrigger
 								role="combobox"

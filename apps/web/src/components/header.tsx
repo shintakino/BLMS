@@ -1,9 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "@/components/ui/sheet";
 import { authClient } from "@/lib/auth-client";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
@@ -98,6 +107,11 @@ export default function Header() {
                         */}
 						<UserMenu />
 
+						{/* Mobile Menu Trigger */}
+						<div className="md:hidden">
+							<MobileMenu isLoginPage={isLoginPage} session={session} />
+						</div>
+
 						{!isLoginPage && !session && (
 							<div className="hidden md:block">
 								<Link href="/login">
@@ -115,5 +129,63 @@ export default function Header() {
 				</div>
 			</div>
 		</motion.header>
+	);
+}
+
+function MobileMenu({
+	isLoginPage,
+	session,
+}: {
+	isLoginPage: boolean;
+	session: typeof authClient.$Infer.Session | null;
+}) {
+	const [open, setOpen] = useState(false);
+
+	return (
+		<Sheet open={open} onOpenChange={setOpen}>
+			<SheetTrigger asChild>
+				<Button variant="ghost" size="icon" className="md:hidden">
+					<Menu className="h-6 w-6" />
+					<span className="sr-only">Toggle menu</span>
+				</Button>
+			</SheetTrigger>
+			<SheetContent
+				side="right"
+				className="border-white/10 bg-slate-950/95 text-slate-200"
+			>
+				<SheetHeader>
+					<SheetTitle className="text-white">Menu</SheetTitle>
+				</SheetHeader>
+				<div className="mt-8 flex flex-col gap-6">
+					<nav className="flex flex-col gap-4 font-medium text-lg">
+						<Link
+							href="/"
+							className="text-slate-300 transition-colors hover:text-red-500"
+							onClick={() => setOpen(false)}
+						>
+							Home
+						</Link>
+						{!isLoginPage && !session && (
+							<Link
+								href="/login"
+								className="text-slate-300 transition-colors hover:text-red-500"
+								onClick={() => setOpen(false)}
+							>
+								Partner Access
+							</Link>
+						)}
+					</nav>
+					{session && (
+						<div className="border-white/10 border-t pt-6">
+							<Link href="/dashboard" onClick={() => setOpen(false)}>
+								<Button className="w-full bg-red-600 text-white hover:bg-red-700">
+									Go to Dashboard
+								</Button>
+							</Link>
+						</div>
+					)}
+				</div>
+			</SheetContent>
+		</Sheet>
 	);
 }

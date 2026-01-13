@@ -378,9 +378,9 @@ export default function RequestForm({
 											return (
 												<div
 													key={item._id || i}
-													className="flex items-end gap-3 rounded-lg border bg-slate-50 p-4 dark:bg-slate-900"
+													className="flex flex-col gap-3 rounded-lg border bg-slate-50 p-4 md:flex-row md:items-end dark:bg-slate-900"
 												>
-													<div className="flex-1 space-y-2">
+													<div className="w-full space-y-2 md:flex-1">
 														<Label className="text-xs">Item Name</Label>
 														<form.Field name={`items[${i}].itemName`}>
 															{(subField) => (
@@ -410,7 +410,7 @@ export default function RequestForm({
 															)}
 														</form.Field>
 													</div>
-													<div className="w-24 space-y-2">
+													<div className="w-full space-y-2 md:w-24">
 														<Label className="text-xs">Qty</Label>
 														<form.Field name={`items[${i}].quantity`}>
 															{(subField) => (
@@ -427,7 +427,7 @@ export default function RequestForm({
 															)}
 														</form.Field>
 													</div>
-													<div className="w-32 space-y-2">
+													<div className="w-full space-y-2 md:w-32">
 														<Label className="text-xs">Category</Label>
 														<form.Field name={`items[${i}].category`}>
 															{(subField) => (
@@ -456,15 +456,17 @@ export default function RequestForm({
 															)}
 														</form.Field>
 													</div>
-													<Button
-														type="button"
-														variant="ghost"
-														size="icon"
-														className="text-red-500 hover:bg-red-50 hover:text-red-700"
-														onClick={() => form.removeFieldValue("items", i)}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
+													<div className="flex justify-end md:block">
+														<Button
+															type="button"
+															variant="ghost"
+															size="icon"
+															className="text-red-500 hover:bg-red-50 hover:text-red-700"
+															onClick={() => form.removeFieldValue("items", i)}
+														>
+															<Trash2 className="h-4 w-4" />
+														</Button>
+													</div>
 												</div>
 											);
 										})}

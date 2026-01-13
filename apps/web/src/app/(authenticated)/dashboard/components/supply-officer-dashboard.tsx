@@ -249,7 +249,7 @@ export default function SupplyOfficerDashboard() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h2 className="font-bold text-3xl tracking-tight">Station Logistics</h2>
 				{/* biome-ignore lint/suspicious/noExplicitAny: types are broken for Link href */}
 				<Link href={"/requests/new" as any}>
@@ -260,7 +260,7 @@ export default function SupplyOfficerDashboard() {
 				</Link>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-3">
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="font-medium text-sm">
@@ -309,58 +309,66 @@ export default function SupplyOfficerDashboard() {
 				<h3 className="font-semibold text-xl">Recent Requests</h3>
 				<Card>
 					<CardContent className="p-0">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>ID</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Priority</TableHead>
-									<TableHead>Date Created</TableHead>
-									<TableHead className="text-right">Action</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{recentRequests?.map((request) => (
-									<TableRow key={request.id}>
-										<TableCell className="font-mono text-xs">
-											{request.id.slice(0, 8)}
-										</TableCell>
-										<TableCell>
-											<Badge
-												variant={
-													request.status === "APPROVED"
-														? "default"
-														: request.status === "REJECTED"
-															? "destructive"
-															: "secondary"
-												}
-											>
-												{request.status}
-											</Badge>
-										</TableCell>
-										<TableCell>
-											<Badge variant="outline">{request.priority}</Badge>
-										</TableCell>
-										<TableCell>
-											{new Date(request.createdAt).toLocaleDateString()}
-										</TableCell>
-										<TableCell className="text-right">
-											<RequestActionMenu request={request} />
-										</TableCell>
-									</TableRow>
-								))}
-								{(!recentRequests || recentRequests.length === 0) && (
+						<div className="overflow-x-auto">
+							<Table>
+								<TableHeader>
 									<TableRow>
-										<TableCell
-											colSpan={5}
-											className="py-6 text-center text-muted-foreground"
-										>
-											No requests found. Create one to get started.
-										</TableCell>
+										<TableHead className="whitespace-nowrap">ID</TableHead>
+										<TableHead className="whitespace-nowrap">Status</TableHead>
+										<TableHead className="whitespace-nowrap">
+											Priority
+										</TableHead>
+										<TableHead className="whitespace-nowrap">
+											Date Created
+										</TableHead>
+										<TableHead className="whitespace-nowrap text-right">
+											Action
+										</TableHead>
 									</TableRow>
-								)}
-							</TableBody>
-						</Table>
+								</TableHeader>
+								<TableBody>
+									{recentRequests?.map((request) => (
+										<TableRow key={request.id}>
+											<TableCell className="whitespace-nowrap font-mono text-xs">
+												{request.id.slice(0, 8)}
+											</TableCell>
+											<TableCell className="whitespace-nowrap">
+												<Badge
+													variant={
+														request.status === "APPROVED"
+															? "default"
+															: request.status === "REJECTED"
+																? "destructive"
+																: "secondary"
+													}
+												>
+													{request.status}
+												</Badge>
+											</TableCell>
+											<TableCell className="whitespace-nowrap">
+												<Badge variant="outline">{request.priority}</Badge>
+											</TableCell>
+											<TableCell className="whitespace-nowrap">
+												{new Date(request.createdAt).toLocaleDateString()}
+											</TableCell>
+											<TableCell className="text-right">
+												<RequestActionMenu request={request} />
+											</TableCell>
+										</TableRow>
+									))}
+									{(!recentRequests || recentRequests.length === 0) && (
+										<TableRow>
+											<TableCell
+												colSpan={5}
+												className="py-6 text-center text-muted-foreground"
+											>
+												No requests found. Create one to get started.
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
+						</div>
 					</CardContent>
 				</Card>
 

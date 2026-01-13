@@ -83,12 +83,12 @@ export default function StationCommanderDashboard({
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h2 className="font-bold text-3xl tracking-tight">Station Command</h2>
 				<p className="text-muted-foreground">Welcome, {session.user.name}</p>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="font-medium text-sm">To Validate</CardTitle>
@@ -143,7 +143,7 @@ export default function StationCommanderDashboard({
 				</Card>
 			</div>
 
-			<Card className="col-span-2">
+			<Card className="col-span-1 sm:col-span-2">
 				<CardHeader>
 					<CardTitle>Pending Validations</CardTitle>
 				</CardHeader>
@@ -155,77 +155,87 @@ export default function StationCommanderDashboard({
 						</div>
 					) : requests && requests.length > 0 ? (
 						<div className="space-y-4">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Request ID</TableHead>
-										<TableHead>Requested By</TableHead>
-										<TableHead>Priority</TableHead>
-										<TableHead>Date</TableHead>
-										<TableHead className="text-right">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{requests.map((request) => (
-										<TableRow key={request.id}>
-											<TableCell className="font-medium">
-												<Link
-													href={
-														/* biome-ignore lint/suspicious/noExplicitAny: Temporary cast for Link href */
-														`/requests/${request.id}` as any
-													}
-													className="hover:underline"
-												>
-													{request.id.substring(0, 8)}...
-												</Link>
-											</TableCell>
-											<TableCell>
-												{request.creator?.name || request.createdBy}
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant={
-														request.priority === "CRITICAL"
-															? "destructive"
-															: "outline"
-													}
-												>
-													{request.priority}
-												</Badge>
-											</TableCell>
-											<TableCell>
-												{new Date(request.createdAt).toLocaleDateString()}
-											</TableCell>
-											<TableCell className="flex justify-end gap-2">
-												<Button variant="outline" size="sm" asChild>
-													<Link
-														href={`/requests/${request.id}`}
-														onMouseEnter={() => {
-															queryClient.prefetchQuery({
-																queryKey: ["request", request.id],
-																queryFn: async () =>
-																	await client.logistics.get({
-																		id: request.id,
-																	}),
-																staleTime: 1000 * 60 * 5,
-															});
-														}}
-													>
-														<Eye className="mr-2 h-4 w-4" />
-														View
-													</Link>
-												</Button>
-												{/* Reuse the RequestActions component for consistent logic */}
-												<RequestActions
-													requestId={request.id}
-													currentStatus={request.status}
-													userRole="station-commander"
-												/>
-											</TableCell>
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="whitespace-nowrap">
+												Request ID
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Requested By
+											</TableHead>
+											<TableHead className="whitespace-nowrap">
+												Priority
+											</TableHead>
+											<TableHead className="whitespace-nowrap">Date</TableHead>
+											<TableHead className="whitespace-nowrap text-right">
+												Actions
+											</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+									</TableHeader>
+									<TableBody>
+										{requests.map((request) => (
+											<TableRow key={request.id}>
+												<TableCell className="whitespace-nowrap font-medium">
+													<Link
+														href={
+															/* biome-ignore lint/suspicious/noExplicitAny: Temporary cast for Link href */
+															`/requests/${request.id}` as any
+														}
+														className="hover:underline"
+													>
+														{request.id.substring(0, 8)}...
+													</Link>
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													{request.creator?.name || request.createdBy}
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													<Badge
+														variant={
+															request.priority === "CRITICAL"
+																? "destructive"
+																: "outline"
+														}
+													>
+														{request.priority}
+													</Badge>
+												</TableCell>
+												<TableCell className="whitespace-nowrap">
+													{new Date(request.createdAt).toLocaleDateString()}
+												</TableCell>
+												<TableCell className="flex justify-end gap-2">
+													<Button variant="outline" size="sm" asChild>
+														<Link
+															href={`/requests/${request.id}`}
+															onMouseEnter={() => {
+																queryClient.prefetchQuery({
+																	queryKey: ["request", request.id],
+																	queryFn: async () =>
+																		await client.logistics.get({
+																			id: request.id,
+																		}),
+																	staleTime: 1000 * 60 * 5,
+																});
+															}}
+														>
+															<Eye className="mr-2 h-4 w-4" />
+															View
+														</Link>
+													</Button>
+													{/* Reuse the RequestActions component for consistent logic */}
+													<RequestActions
+														requestId={request.id}
+														currentStatus={request.status}
+														userRole="station-commander"
+													/>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
 
 							{/* Pagination Controls */}
 							<Pagination>
