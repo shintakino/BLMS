@@ -8,7 +8,7 @@ on:
 
 jobs:
   ping_supabase:
-    runs-on: ubuntu-latests
+    runs-on: ubuntu-latest
     steps:
       - name: Send Ping Request
         run: |
