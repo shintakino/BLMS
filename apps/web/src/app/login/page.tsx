@@ -20,7 +20,7 @@ export default function LoginPage() {
 						fill
 						className="object-cover brightness-50 contrast-125 filter"
 						priority
-						quality={85}
+						quality={75}
 					/>
 					<div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 					<div className="absolute inset-0 bg-red-950/30 mix-blend-color" />
