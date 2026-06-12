@@ -1,7 +1,7 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import path from "path";
 import pg from "pg";
-import { fileURLToPath } from "url";
 
 // Load environment variables
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

@@ -1,7 +1,7 @@
 // test-connection.js
 
+import path from "node:path";
 import dotenv from "dotenv";
-import path from "path";
 import pg from "pg";
 
 // Load environment variables from apps/web/.env

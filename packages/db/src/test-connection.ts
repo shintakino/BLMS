@@ -1,9 +1,11 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import path from "path";
 import pg from "pg";
 
 // Load environment variables from apps/web/.env
-const envPath = path.resolve(process.cwd(), "../../apps/web/.env");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, "../../../apps/web/.env");
 dotenv.config({ path: envPath });
 
 const rawUrl = process.env.DATABASE_URL;

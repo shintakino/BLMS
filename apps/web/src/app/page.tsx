@@ -291,9 +291,18 @@ export default function LandingPage() {
 							</h3>
 						</div>
 						<div className="relative space-y-8 border-white/10 border-l pl-6">
-							<WorkflowStep action="Initiate request, verify item specifications and attach operational justification documents." />
-							<WorkflowStep action="Review and validate locally. Apply station commander seal and validate disposition." />
-							<WorkflowStep action="Consolidate reviews at RLM level, then secure final director sign-off or disapproval override." />
+							<WorkflowStep
+								actorRole="Supply Officer"
+								action="Initiate request, verify item specifications and attach operational justification documents."
+							/>
+							<WorkflowStep
+								actorRole="Station Commander"
+								action="Review and validate locally. Apply station commander seal and validate disposition."
+							/>
+							<WorkflowStep
+								actorRole="Regional Logistics Manager / Director"
+								action="Consolidate reviews at RLM level, then secure final director sign-off or disapproval override."
+							/>
 						</div>
 					</div>
 				</div>
@@ -350,11 +359,19 @@ function PurposeCard({
 	);
 }
 
-function WorkflowStep({ role, action }: { role: string; action: string }) {
+function WorkflowStep({
+	actorRole,
+	action,
+}: {
+	actorRole: string;
+	action: string;
+}) {
 	return (
 		<div className="relative border border-white/5 bg-slate-900/30 p-4">
 			<span className="absolute top-5 -left-[31px] flex h-2 w-2 rounded-full bg-red-600 shadow-[0_0_10px_#ef4444]" />
-			<h4 className="mb-1 font-bold text-white text-xs uppercase">{role}</h4>
+			<h4 className="mb-1 font-bold text-white text-xs uppercase">
+				{actorRole}
+			</h4>
 			<p className="text-slate-400 text-xs leading-relaxed">{action}</p>
 		</div>
 	);

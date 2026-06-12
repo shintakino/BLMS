@@ -74,7 +74,7 @@ export default function RequestDetailsPage({
 						requestId={id}
 						currentStatus={request.status}
 						// biome-ignore lint/suspicious/noExplicitAny: types are broken for session user role
-						userRole={(session?.user as any).role || ""}
+						userRole={(session?.user as any)?.role || ""}
 					/>
 				</div>
 			</div>
