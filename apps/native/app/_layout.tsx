@@ -1,3 +1,5 @@
+/// <reference path="../types/react-native-tailwind.d.ts" />
+/// <reference path="../types/css.d.ts" />
 import "@/global.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
@@ -16,6 +18,7 @@ function StackLayout() {
 	return (
 		<Stack screenOptions={{}}>
 			<Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+			<Stack.Screen name="login" options={{ headerShown: false }} />
 			<Stack.Screen
 				name="modal"
 				options={{ title: "Modal", presentation: "modal" }}

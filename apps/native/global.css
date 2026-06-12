@@ -3,3 +3,28 @@
 @import "heroui-native/styles";
 
 @source "./node_modules/heroui-native/lib";
+
+@theme {
+	--font-mono: "Courier", "Courier New", monospace;
+	--font-sans: "Courier", "Courier New", monospace;
+
+	--color-background: #020617;
+	--color-foreground: #f8fafc;
+
+	--color-primary: #dc2626;
+	--color-primary-foreground: #ffffff;
+
+	--color-secondary: #0f172a;
+	--color-secondary-foreground: #f8fafc;
+
+	--color-muted: #1e293b;
+	--color-muted-foreground: #94a3b8;
+
+	--color-accent: #dc2626;
+	--color-accent-foreground: #ffffff;
+
+	--color-destructive: #7f1d1d;
+	--color-border: rgba(255, 255, 255, 0.1);
+	--color-divider: rgba(255, 255, 255, 0.1);
+	--color-surface: #0b0f19;
+}
