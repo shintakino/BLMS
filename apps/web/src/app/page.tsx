@@ -95,28 +95,36 @@ export default function LandingPage() {
 						variants={fadeInUp}
 						className="mb-8 flex justify-center gap-6 md:gap-12"
 					>
-						<div className="relative h-24 w-24 drop-shadow-2xl md:h-32 md:w-32">
+						<motion.div 
+							animate={{ y: [0, -8, 0] }}
+							transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+							className="relative h-24 w-24 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] md:h-32 md:w-32"
+						>
 							<Image
 								src="/images/bfpNationalLogo.png"
 								alt="BFP National Logo"
 								fill
-								className="object-contain"
+								className="object-contain animate-pulse-slow"
 							/>
-						</div>
-						<div className="relative h-24 w-24 drop-shadow-2xl md:h-32 md:w-32">
+						</motion.div>
+						<motion.div 
+							animate={{ y: [-5, 5, -5] }}
+							transition={{ duration: 4.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+							className="relative h-24 w-24 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] md:h-32 md:w-32"
+						>
 							<Image
 								src="/images/bfpRegion12Logo.png"
 								alt="BFP Region 12 Logo"
 								fill
 								className="object-contain"
 							/>
-						</div>
+						</motion.div>
 					</motion.div>
 
 					<motion.div variants={fadeInUp} className="mb-6 flex justify-center">
 						<Badge
 							variant="destructive"
-							className="border-red-500/50 bg-gradient-to-r from-red-900/50 to-red-950/50 px-6 py-1.5 font-semibold text-red-100 text-sm uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-sm"
+							className="border-red-500/50 bg-gradient-to-r from-red-900/60 to-red-950/60 px-6 py-1.5 font-semibold text-red-100 text-sm uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(239,68,68,0.4)] backdrop-blur-sm"
 						>
 							Official Use Only
 						</Badge>
@@ -127,14 +135,14 @@ export default function LandingPage() {
 						className="mb-4 font-extrabold text-4xl leading-tight tracking-tight drop-shadow-2xl md:text-5xl lg:text-7xl"
 					>
 						Bureau of Fire Protection
-						<span className="mt-2 block bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+						<span className="mt-2 block bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
 							Region XII – SOCCSKSARGEN
 						</span>
 					</motion.h1>
 
 					<motion.p
 						variants={fadeInUp}
-						className="mx-auto mb-8 max-w-2xl text-slate-300 text-xl"
+						className="mx-auto mb-8 max-w-2xl text-slate-300 text-xl font-medium tracking-wide"
 					>
 						Logistics & Supply Management System
 					</motion.p>
@@ -154,7 +162,7 @@ export default function LandingPage() {
 						<Link href={session ? "/dashboard" : "/login"}>
 							<Button
 								size="lg"
-								className="bg-red-600 px-8 py-6 font-semibold text-lg shadow-red-900/20 shadow-xl transition-all hover:scale-105 hover:bg-red-700"
+								className="relative overflow-hidden bg-gradient-to-r from-red-600 to-orange-600 px-8 py-6 font-semibold text-lg text-white shadow-[0_0_20px_rgba(220,38,38,0.3)] transition-all duration-300 hover:scale-105 hover:from-red-500 hover:to-orange-500 hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]"
 							>
 								{session ? "Go to Dashboard" : "Login to System"}
 								<ArrowRight className="ml-2 h-5 w-5" />
@@ -357,13 +365,13 @@ function PurposeCard({
 }) {
 	return (
 		<motion.div variants={fadeInUp}>
-			<Card className="h-full border-white/10 border-t-4 border-t-red-600 bg-black/40 text-slate-200 backdrop-blur-md transition-all hover:-translate-y-2 hover:bg-black/60 hover:shadow-2xl hover:shadow-red-900/20">
+			<Card className="h-full border-white/5 border-t-4 border-t-red-600 bg-slate-900/40 text-slate-200 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-[0_15px_30px_-10px_rgba(220,38,38,0.25)]">
 				<CardHeader>
 					<div className="mb-6">{icon}</div>
 					<CardTitle className="text-2xl">{title}</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<CardDescription className="text-lg leading-relaxed">
+					<CardDescription className="text-lg leading-relaxed text-slate-300">
 						{description}
 					</CardDescription>
 				</CardContent>
@@ -387,9 +395,9 @@ function WorkflowStep({
 			whileInView={{ opacity: 1, x: 0 }}
 			viewport={{ once: true }}
 			transition={{ duration: 0.5, delay }}
-			className="relative rounded-2xl border border-white/5 bg-black/30 p-6 backdrop-blur-sm"
+			className="relative rounded-2xl border border-white/5 bg-slate-900/30 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-slate-900/50"
 		>
-			<span className="absolute top-8 -left-[54px] flex h-6 w-6 items-center justify-center rounded-full bg-red-600 shadow-md ring-4 ring-slate-950">
+			<span className="absolute top-8 -left-[54px] flex h-6 w-6 items-center justify-center rounded-full bg-red-600 shadow-md ring-4 ring-slate-950 animate-pulse-slow">
 				<div className="h-2 w-2 rounded-full bg-white" />
 			</span>
 			<h4 className="mb-2 font-bold text-white text-xl">{stepRole}</h4>
@@ -397,3 +405,4 @@ function WorkflowStep({
 		</motion.div>
 	);
 }
+
