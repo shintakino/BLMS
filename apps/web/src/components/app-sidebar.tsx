@@ -39,24 +39,24 @@ export function AppSidebar({ className }: SidebarProps) {
 	const links = getLinksByRole(role);
 
 	return (
-		<div className={cn("h-screen border-r bg-muted/20 pb-12", className)}>
+		<div className={cn("h-screen border-r border-white/10 bg-slate-950/80 pb-12 font-mono text-xs crt-scanline", className)}>
 			<div className="space-y-4 py-4">
 				<div className="px-3 py-2">
 					<div className="mb-6 flex items-center gap-3 px-4">
-						<div className="relative h-10 w-10 shrink-0">
+						<div className="relative h-8 w-8 shrink-0">
 							{/* biome-ignore lint/performance/noImgElement: local asset */}
 							<img
-								src="/images/Bureau_of_Fire_Protection.png"
+								src="/images/bfpRegion12Logo.png"
 								alt="BFP Logo"
 								className="h-full w-full object-contain"
 							/>
 						</div>
 						<div className="flex flex-col">
-							<span className="text-muted-foreground text-xs leading-tight">
-								Bureau of Fire Protection
+							<span className="font-bold text-white uppercase tracking-wider text-[10px]">
+								BLMS COMMAND
 							</span>
-							<span className="font-semibold text-base leading-tight tracking-tight">
-								Logistics
+							<span className="font-bold text-[8px] text-red-500 uppercase">
+								{"/// SYSTEM TERMINAL"}
 							</span>
 						</div>
 					</div>
@@ -66,7 +66,12 @@ export function AppSidebar({ className }: SidebarProps) {
 							<Link key={link.href} href={link.href as any}>
 								<Button
 									variant={pathname === link.href ? "secondary" : "ghost"}
-									className="w-full justify-start"
+									className={cn(
+										"w-full justify-start rounded-none text-xs uppercase tracking-wider",
+										pathname === link.href 
+											? "bg-red-950/20 text-red-400 border-l-2 border-red-600 font-bold" 
+											: "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+									)}
 								>
 									<link.icon className="mr-2 h-4 w-4" />
 									{link.label}
@@ -79,9 +84,9 @@ export function AppSidebar({ className }: SidebarProps) {
 				{/* Bottom Section */}
 				<div className="absolute bottom-4 w-full px-4">
 					{/* User Profile */}
-					<div className="flex items-center justify-between rounded-lg border bg-background p-2">
+					<div className="flex items-center justify-between rounded-none border border-white/10 bg-slate-950/90 p-2">
 						<div className="flex items-center gap-2 overflow-hidden">
-							<div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-none border border-white/20 bg-slate-900">
 								{session.user.image ? (
 									/* biome-ignore lint/performance/noImgElement: user avatar */
 									<img
@@ -90,16 +95,16 @@ export function AppSidebar({ className }: SidebarProps) {
 										className="h-full w-full object-cover"
 									/>
 								) : (
-									<span className="font-bold text-xs">
+									<span className="font-bold text-xs text-red-500">
 										{session.user.name.charAt(0)}
 									</span>
 								)}
 							</div>
 							<div className="flex-1 overflow-hidden">
-								<p className="truncate font-medium text-sm">
+								<p className="truncate font-bold text-slate-200 uppercase text-[10px]">
 									{session.user.name}
 								</p>
-								<p className="truncate text-muted-foreground text-xs capitalize">
+								<p className="truncate text-red-400 text-[8px] uppercase tracking-wider">
 									{role?.replace(/-/g, " ")}
 								</p>
 							</div>
@@ -118,15 +123,15 @@ export function MobileSidebar() {
 	return (
 		<Sheet>
 			<SheetTrigger className="p-2 md:hidden">
-				<Menu className="h-5 w-5" />
+				<Menu className="h-5 w-5 text-slate-300" />
 				<span className="sr-only">Toggle Menu</span>
 			</SheetTrigger>
 			<SheetContent
 				side="left"
-				className="w-[80%] max-w-[300px] bg-background p-0"
+				className="w-[80%] max-w-[300px] bg-slate-950 border-r border-white/10 p-0 text-slate-200 font-mono"
 			>
-				<SheetHeader className="border-b px-6 py-4">
-					<SheetTitle>BFP Logistics</SheetTitle>
+				<SheetHeader className="border-b border-white/10 px-6 py-4">
+					<SheetTitle className="text-white text-xs uppercase tracking-wider">BLMS COMMAND</SheetTitle>
 				</SheetHeader>
 				<AppSidebar className="border-none" />
 			</SheetContent>
