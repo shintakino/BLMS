@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import path from "path";
 import pg from "pg";
+import { fileURLToPath } from "url";
 
 // Load environment variables
-const envPath = path.resolve(process.cwd(), "../../apps/web/.env");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, "../../../apps/web/.env");
 dotenv.config({ path: envPath });
 
 const rawUrl = process.env.DATABASE_URL;
