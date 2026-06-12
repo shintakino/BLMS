@@ -2,9 +2,9 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
+	Activity,
 	AlertTriangle,
 	ArrowRight,
-	BarChart3,
 	Building2,
 	CheckCircle2,
 	FileText,
@@ -13,340 +13,240 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-// Ember Particle Effect Component
 import { EmberParticles } from "@/components/ember-particles";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
-
-const fadeInUp = {
-	hidden: { opacity: 0, y: 20 },
-	visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
-const staggerContainer = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			staggerChildren: 0.2,
-		},
-	},
-};
 
 export default function LandingPage() {
 	const { scrollY } = useScroll();
 	const { data: session } = authClient.useSession();
+	const heroTextY = useTransform(scrollY, [0, 500], [0, 60]);
 
-	// Parallax Effects
-	const heroTextY = useTransform(scrollY, [0, 500], [0, 100]); // Subtle shift for text
-	const embersY = useTransform(scrollY, [0, 1000], [0, 200]); // Embers move at different speed
+	// Mock data representing BFP Region XII provinces
+	const regionXIIProvinces = [
+		{ name: "South Cotabato", stations: 11, status: "NOMINAL", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" },
+		{ name: "Cotabato (North)", stations: 18, status: "NOMINAL", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" },
+		{ name: "Sultan Kudarat", stations: 12, status: "LOW_STOCK", color: "text-amber-500 bg-amber-500/10 border-amber-500/30" },
+		{ name: "Sarangani", stations: 7, status: "NOMINAL", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" },
+		{ name: "General Santos City", stations: 4, status: "CRITICAL", color: "text-red-500 bg-red-500/10 border-red-500/30" }
+	];
 
 	return (
-		<div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-foreground">
-			{/* Hero Section */}
+		<div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 crt-scanline font-mono">
 			{/* Global Background */}
-			<div className="absolute inset-0 z-0 flex justify-center bg-slate-950">
+			<div className="absolute inset-0 z-0 flex justify-center bg-slate-950 opacity-40">
 				<Image
 					src="/images/fireman.png"
 					alt="Firefighter Background"
 					fill
-					className="scale-105 object-contain object-top opacity-50 blur-[2px] md:opacity-30"
+					className="object-cover object-top filter brightness-50 contrast-125"
 					priority
-					quality={50}
+					quality={75}
 				/>
-				<Image
-					src="/images/fireman.png"
-					alt="Firefighter Background"
-					fill
-					className="object-contain object-top"
-					priority
-					quality={90}
-				/>
-				<div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/40 to-slate-950/90" />
+				<div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/70 to-slate-950" />
 			</div>
 
-			{/* Hero Section */}
-			<section className="relative min-h-screen overflow-hidden text-white">
-				{/* Abstract background pattern removed in favor of global background */}
+			<div className="absolute inset-0 z-0 pointer-events-none tactical-grid" />
 
-				{/* Fire Animation Effect with Parallax */}
-				<motion.div style={{ y: embersY }} className="absolute inset-0 z-0">
-					<EmberParticles />
-				</motion.div>
+			{/* Main Hero & Console Entrance */}
+			<section className="relative z-10 container mx-auto px-6 py-20 lg:py-32">
+				<div className="grid gap-12 lg:grid-cols-12 items-center">
+					
+					{/* Left: Terminal Readouts & Access Controls */}
+					<motion.div style={{ y: heroTextY }} className="lg:col-span-7 space-y-8 text-left">
+						<div className="inline-flex items-center gap-2 border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs text-red-500 uppercase tracking-widest">
+							<span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+							<span>{"/// BFP LOGISTICS COMMAND: ACTIVE"}</span>
+						</div>
 
-				<motion.div
-					style={{ y: heroTextY }}
-					className="container relative z-10 mx-auto flex h-full flex-col items-center justify-center px-4 pt-20 text-center"
-					initial="hidden"
-					animate="visible"
-					variants={staggerContainer}
-				>
-					<motion.div
-						variants={fadeInUp}
-						className="mb-8 flex justify-center gap-6 md:gap-12"
-					>
-						<motion.div 
-							animate={{ y: [0, -8, 0] }}
-							transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-							className="relative h-24 w-24 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] md:h-32 md:w-32"
-						>
-							<Image
-								src="/images/bfpNationalLogo.png"
-								alt="BFP National Logo"
-								fill
-								className="object-contain animate-pulse-slow"
-							/>
-						</motion.div>
-						<motion.div 
-							animate={{ y: [-5, 5, -5] }}
-							transition={{ duration: 4.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-							className="relative h-24 w-24 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] md:h-32 md:w-32"
-						>
-							<Image
-								src="/images/bfpRegion12Logo.png"
-								alt="BFP Region 12 Logo"
-								fill
-								className="object-contain"
-							/>
-						</motion.div>
-					</motion.div>
-
-					<motion.div variants={fadeInUp} className="mb-6 flex justify-center">
-						<Badge
-							variant="destructive"
-							className="border-red-500/50 bg-gradient-to-r from-red-900/60 to-red-950/60 px-6 py-1.5 font-semibold text-red-100 text-sm uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(239,68,68,0.4)] backdrop-blur-sm"
-						>
-							Official Use Only
-						</Badge>
-					</motion.div>
-
-					<motion.h1
-						variants={fadeInUp}
-						className="mb-4 font-extrabold text-4xl leading-tight tracking-tight drop-shadow-2xl md:text-5xl lg:text-7xl"
-					>
-						Bureau of Fire Protection
-						<span className="mt-2 block bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
-							Region XII – SOCCSKSARGEN
-						</span>
-					</motion.h1>
-
-					<motion.p
-						variants={fadeInUp}
-						className="mx-auto mb-8 max-w-2xl text-slate-300 text-xl font-medium tracking-wide"
-					>
-						Logistics & Supply Management System
-					</motion.p>
-
-					<motion.div
-						variants={fadeInUp}
-						className="mx-auto max-w-xl text-slate-400"
-					>
-						<p className="mb-8 font-light text-lg">
-							A centralized, secure, and auditable platform for managing fire
-							station logistics, inventory, and supply requests within BFP
-							Region XII.
-						</p>
-					</motion.div>
-
-					<motion.div variants={fadeInUp} className="flex justify-center gap-4">
-						<Link href={session ? "/dashboard" : "/login"}>
-							<Button
-								size="lg"
-								className="relative overflow-hidden bg-gradient-to-r from-red-600 to-orange-600 px-8 py-6 font-semibold text-lg text-white shadow-[0_0_20px_rgba(220,38,38,0.3)] transition-all duration-300 hover:scale-105 hover:from-red-500 hover:to-orange-500 hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]"
+						{/* Brand Logos Floating */}
+						<div className="flex items-center gap-6">
+							<motion.div 
+								animate={{ y: [0, -8, 0] }}
+								transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+								className="relative h-20 w-20 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)]"
 							>
-								{session ? "Go to Dashboard" : "Login to System"}
-								<ArrowRight className="ml-2 h-5 w-5" />
-							</Button>
-						</Link>
-					</motion.div>
+								<Image src="/images/bfpNationalLogo.png" alt="BFP National Logo" fill className="object-contain" />
+							</motion.div>
+							<motion.div 
+								animate={{ y: [-5, 5, -5] }}
+								transition={{ duration: 4.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+								className="relative h-20 w-20 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+							>
+								<Image src="/images/bfpRegion12Logo.png" alt="BFP Region 12 Logo" fill className="object-contain" />
+							</motion.div>
+						</div>
 
-					{/* Scroll Indicator */}
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1, y: [0, 10, 0] }}
-						transition={{
-							delay: 1,
-							duration: 2,
-							repeat: Number.POSITIVE_INFINITY,
-						}}
-						className="mt-12 text-slate-500"
-					>
-						<div className="flex flex-col items-center gap-2">
-							<span className="font-medium text-slate-400 text-xs uppercase tracking-[0.2em]">
-								Scroll
+						<h1 className="font-extrabold text-3xl md:text-5xl leading-none uppercase tracking-tight">
+							BUREAU OF FIRE PROTECTION <br />
+							<span className="bg-red-600 px-3 py-1 inline-block mt-2 text-white">
+								REGION XII LOGISTICS
 							</span>
-							<div className="h-12 w-[1px] bg-gradient-to-b from-slate-400 to-transparent" />
+						</h1>
+
+						<p className="border-l-4 border-red-600 pl-4 text-slate-400 text-sm leading-relaxed max-w-xl">
+							THE CENTRALIZED AUDITABLE COMMAND TERMINAL FOR INVENTORY DISPOSITION, 
+							SUPPLY DISPATCH, AND ACCOUNTABLE CHAIN-OF-COMMAND OVERRIDE.
+						</p>
+
+						<div className="flex flex-wrap gap-4">
+							<Link href={session ? "/dashboard" : "/login"}>
+								<Button className="h-11 rounded-none border border-foreground bg-red-600 text-white font-bold text-xs uppercase tracking-wider shadow-[4px_4px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000] transition-all">
+									{session ? "Enter Operations Room" : "Authorize Terminal Access"}
+									<ArrowRight className="ml-2 h-4 w-4" />
+								</Button>
+							</Link>
 						</div>
 					</motion.div>
-				</motion.div>
-			</section>
 
-			{/* System Purpose */}
-			<section className="relative z-20 py-24">
-				<div className="container mx-auto max-w-5xl px-4">
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true, margin: "-100px" }}
-						transition={{ duration: 0.6 }}
-						className="mb-16 rounded-3xl border border-white/10 bg-black/20 p-12 text-center backdrop-blur-sm"
-					>
-						<h2 className="mb-4 font-bold text-4xl text-white">
-							System Purpose
-						</h2>
-						<p className="mx-auto max-w-2xl text-lg text-slate-300">
-							Designed to support the operational readiness of fire stations
-							across Region XII by providing accurate visibility and structured
-							workflows.
-						</p>
-					</motion.div>
+					{/* Right: Operational Status Matrix Panel */}
+					<motion.div className="lg:col-span-5 console-card crosshair-corner p-6 border border-white/10 space-y-6">
+						<div className="flex items-center justify-between border-b border-white/10 pb-4">
+							<div className="flex items-center gap-3">
+								<Activity className="h-5 w-5 text-red-500" />
+								<div>
+									<h3 className="font-bold text-xs text-white uppercase">REGIONAL STATUS MATRIX</h3>
+									<p className="text-[10px] text-slate-500">Node telemetry update online</p>
+								</div>
+							</div>
+							<Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/5 text-[10px]">
+								SECURE CONNECTION
+							</Badge>
+						</div>
 
-					<motion.div
-						initial="hidden"
-						whileInView="visible"
-						viewport={{ once: true, margin: "-100px" }}
-						variants={staggerContainer}
-						className="grid gap-8 md:grid-cols-3"
-					>
-						<PurposeCard
-							icon={<BarChart3 className="h-10 w-10 text-red-600" />}
-							title="Inventory Visibility"
-							description="Real-time tracking of assets and supplies per fire station."
-						/>
-						<PurposeCard
-							icon={<FileText className="h-10 w-10 text-red-600" />}
-							title="Structured Workflows"
-							description="Standardized request and approval processes compliant with BFP procedures."
-						/>
-						<PurposeCard
-							icon={<CheckCircle2 className="h-10 w-10 text-red-600" />}
-							title="Audit & Compliance"
-							description="Complete accountability with time-stamped logs for every transaction."
-						/>
+						<div className="space-y-3">
+							{regionXIIProvinces.map((prov) => (
+								<div key={prov.name} className="flex items-center justify-between p-3 border border-white/5 bg-slate-950/60 text-xs">
+									<span className="font-bold text-slate-300 uppercase">{prov.name}</span>
+									<div className="flex items-center gap-3">
+										<span className="text-slate-500">{prov.stations} STATIONS</span>
+										<span className={`px-2 py-0.5 border text-[9px] font-bold ${prov.color}`}>
+											{prov.status}
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+
+						{/* Security Notice Indicator */}
+						<div className="border border-red-900/30 bg-red-950/20 p-4 text-[10px] text-red-400 flex gap-3">
+							<AlertTriangle className="h-5 w-5 shrink-0 text-red-500" />
+							<div>
+								<span className="font-bold block uppercase">[SECURITY STATEMENT]:</span>
+								UNAUTHORIZED ACCESS AND LOGISTICS ALTERATION ATTEMPTS ARE GEOLOCATED, LOGGED, 
+								AND FORWARDED TO THE BFP OFFICE OF THE REGIONAL DIRECTOR.
+							</div>
+						</div>
 					</motion.div>
 				</div>
 			</section>
 
-			{/* Operational Scope & Workflow */}
-			<section className="relative z-20 py-24">
-				<div className="container mx-auto max-w-6xl px-4">
-					<div className="grid gap-20 lg:grid-cols-2">
-						{/* Scope */}
-						<motion.div
-							initial={{ opacity: 0, x: -50 }}
-							whileInView={{ opacity: 1, x: 0 }}
-							viewport={{ once: true, margin: "-100px" }}
-							transition={{ duration: 0.8 }}
-						>
-							<div className="mb-8 flex items-center gap-3">
-								<Building2 className="h-8 w-8 text-red-600" />
-								<h3 className="font-bold text-3xl">Organizational Scope</h3>
-							</div>
-							<div className="space-y-6 text-lg text-slate-300">
-								<p>This system is strictly limited to:</p>
-								<ul className="list-inside list-disc space-y-3 marker:text-red-500">
-									<li>Region XII – SOCCSKSARGEN</li>
-									<li>
-										Provinces, cities, and municipalities under the region
-									</li>
-									<li>Official BFP fire stations only</li>
-								</ul>
-								<Alert
-									variant="destructive"
-									className="mt-8 border-red-200 bg-red-50 text-red-900 dark:bg-red-900/10 dark:text-red-200"
-								>
-									<AlertTriangle className="h-5 w-5" />
-									<AlertTitle className="font-bold">
-										Restricted Access
-									</AlertTitle>
-									<AlertDescription>
-										Cross-region access is not permitted. Accounts are not
-										public.
-									</AlertDescription>
-								</Alert>
-							</div>
-						</motion.div>
+			{/* Embers Fire Animation */}
+			<div className="absolute inset-0 z-0 pointer-events-none">
+				<EmberParticles />
+			</div>
 
-						{/* Workflow */}
-						<motion.div
-							initial={{ opacity: 0, x: 50 }}
-							whileInView={{ opacity: 1, x: 0 }}
-							viewport={{ once: true, margin: "-100px" }}
-							transition={{ duration: 0.8 }}
-						>
-							<div className="mb-8 flex items-center gap-3">
-								<Truck className="h-8 w-8 text-red-600" />
-								<h3 className="font-bold text-3xl">Operational Workflow</h3>
-							</div>
-							<div className="relative space-y-12 border-slate-200 border-l-2 pl-10 dark:border-slate-800">
-								<WorkflowStep
-									stepRole="Fire Station"
-									action="Supply Officer creates request → Station Commander validates"
-									delay={0}
-								/>
-								<WorkflowStep
-									stepRole="Region"
-									action="Regional Logistics Manager reviews and consolidates"
-									delay={0.2}
-								/>
-								<WorkflowStep
-									stepRole="Region"
-									action="Regional Director approves or rejects. Final disposition recorded."
-									delay={0.4}
-								/>
-							</div>
-						</motion.div>
+			{/* System Purpose Cards */}
+			<section className="relative z-10 container mx-auto px-6 py-20 border-t border-white/5 bg-slate-950/40">
+				<div className="max-w-4xl mx-auto text-center mb-16 space-y-3">
+					<h2 className="font-bold text-2xl uppercase tracking-widest text-red-500">OPERATIONAL OBJECTIVES</h2>
+					<p className="text-slate-400 text-sm max-w-xl mx-auto">
+						Enforcing structural compliance, item traceability, and chain-of-command accountability.
+					</p>
+				</div>
+
+				<div className="grid gap-8 md:grid-cols-3">
+					<PurposeCard
+						icon={<Activity className="h-8 w-8 text-red-500" />}
+						title="INVENTORY DISPOSITION"
+						description="Real-time hardware status metrics and asset tracking across municipal command units."
+					/>
+					<PurposeCard
+						icon={<FileText className="h-8 w-8 text-red-500" />}
+						title="COMMAND WORKFLOWS"
+						description="Accountable logistics routing from Supply Officers up to Regional Director overrides."
+					/>
+					<PurposeCard
+						icon={<CheckCircle2 className="h-8 w-8 text-red-500" />}
+						title="IMMUTABLE AUDITS"
+						description="Full cryptographic logging of status changes, transactions, approvals and user operations."
+					/>
+				</div>
+			</section>
+
+			{/* Scope & Workflow */}
+			<section className="relative z-10 container mx-auto px-6 py-20 border-t border-white/5 bg-slate-950/20">
+				<div className="grid gap-16 lg:grid-cols-2">
+					<div>
+						<div className="flex items-center gap-3 mb-6">
+							<Building2 className="h-6 w-6 text-red-500" />
+							<h3 className="font-bold text-xl uppercase tracking-wider text-white">Organizational Scope</h3>
+						</div>
+						<div className="space-y-4 text-sm text-slate-400">
+							<p>This command terminal is strictly limited to operations within:</p>
+							<ul className="list-inside list-disc space-y-2 marker:text-red-500">
+								<li>Region XII – SOCCSKSARGEN Jurisdiction</li>
+								<li>Provinces, cities, and municipalities under regional decree</li>
+								<li>Authorized BFP fire stations and logistics depots</li>
+							</ul>
+							<Alert variant="destructive" className="mt-8 border-red-500/30 bg-red-950/20 text-red-200">
+								<AlertTriangle className="h-5 w-5" />
+								<AlertTitle className="font-bold uppercase text-xs">Restricted Terminal Access</AlertTitle>
+								<AlertDescription className="text-xs">
+									Cross-region access is strictly prohibited. Terminal logs are subject to active auditable review.
+								</AlertDescription>
+							</Alert>
+						</div>
+					</div>
+
+					<div>
+						<div className="flex items-center gap-3 mb-6">
+							<Truck className="h-6 w-6 text-red-500" />
+							<h3 className="font-bold text-xl uppercase tracking-wider text-white">Operational Workflow</h3>
+						</div>
+						<div className="relative space-y-8 border-l border-white/10 pl-6">
+							<WorkflowStep
+								role="Supply Officer"
+								action="Initiate request, verify item specifications and attach operational justification documents."
+							/>
+							<WorkflowStep
+								role="Station Commander"
+								action="Review and validate locally. Apply station commander seal and validate disposition."
+							/>
+							<WorkflowStep
+								role="Regional Director"
+								action="Consolidate reviews at RLM level, then secure final director sign-off or disapproval override."
+							/>
+						</div>
 					</div>
 				</div>
 			</section>
 
-			<Separator />
-
-			{/* Security Notice */}
-			<section className="relative z-20 py-24">
-				<div className="container mx-auto max-w-4xl px-4">
-					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						whileInView={{ opacity: 1, scale: 1 }}
-						viewport={{ once: true }}
-						transition={{ duration: 0.5 }}
-					>
-						<Alert className="border-amber-200 bg-amber-50 text-amber-900 shadow-sm dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-							<ShieldAlert className="h-5 w-5" />
-							<AlertTitle className="mb-2 font-bold text-lg">
-								Notice & Disclaimer
-							</AlertTitle>
-							<AlertDescription className="text-base">
-								This system is intended for official BFP use only. Unauthorized
-								access, data misuse, or circumvention of procedures is subject
-								to administrative and legal action under applicable laws and BFP
-								regulations.
-							</AlertDescription>
-						</Alert>
-					</motion.div>
-				</div>
+			{/* Disclaimer */}
+			<section className="relative z-10 container mx-auto px-6 py-10 border-t border-white/5 bg-slate-950/60">
+				<Alert className="border-amber-500/30 bg-amber-950/10 text-amber-200">
+					<ShieldAlert className="h-5 w-5 text-amber-500" />
+					<AlertTitle className="font-bold uppercase text-xs">NOTICE AND DISCLAIMER</AlertTitle>
+					<AlertDescription className="text-xs">
+						This system is intended for official BFP use only. Unauthorized actions, data misuse, 
+						or circumvention of logistics procedures is subject to administrative and legal action under 
+						applicable military/civil service regulations and Philippine laws.
+					</AlertDescription>
+				</Alert>
 			</section>
 
 			{/* Footer */}
-			<footer className="relative z-20 border-white/10 border-t bg-slate-950/80 py-12 text-center text-slate-400 backdrop-blur-xl">
-				<div className="container mx-auto px-4">
-					<div className="mb-4 font-bold text-lg text-white">
+			<footer className="relative z-10 border-t border-white/5 bg-slate-950/80 py-12 text-center text-xs text-slate-500">
+				<div className="container mx-auto px-6 space-y-3">
+					<div className="font-bold text-slate-300 uppercase">
 						Bureau of Fire Protection – Region XII
 					</div>
-					<div className="text-sm">SOCCSKSARGEN</div>
-					<div className="mt-8 text-xs opacity-60">
-						For system access concerns, contact your Station Commander or
-						Provincial Logistics Office.
+					<div>SOCCSKSARGEN Operations Terminal</div>
+					<div className="opacity-60">
+						For access credentials and compliance audits, contact the regional command center.
 					</div>
 				</div>
 			</footer>
@@ -354,55 +254,22 @@ export default function LandingPage() {
 	);
 }
 
-function PurposeCard({
-	icon,
-	title,
-	description,
-}: {
-	icon: React.ReactNode;
-	title: string;
-	description: string;
-}) {
+function PurposeCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
 	return (
-		<motion.div variants={fadeInUp}>
-			<Card className="h-full border-white/5 border-t-4 border-t-red-600 bg-slate-900/40 text-slate-200 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:bg-slate-900/60 hover:border-white/10 hover:shadow-[0_15px_30px_-10px_rgba(220,38,38,0.25)]">
-				<CardHeader>
-					<div className="mb-6">{icon}</div>
-					<CardTitle className="text-2xl">{title}</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<CardDescription className="text-lg leading-relaxed text-slate-300">
-						{description}
-					</CardDescription>
-				</CardContent>
-			</Card>
-		</motion.div>
+		<div className="console-card crosshair-corner p-6 border border-white/5 bg-slate-900/40 text-slate-200">
+			<div className="mb-4">{icon}</div>
+			<h3 className="font-bold text-base text-white uppercase mb-2">{title}</h3>
+			<p className="text-xs leading-relaxed text-slate-400">{description}</p>
+		</div>
 	);
 }
 
-function WorkflowStep({
-	stepRole,
-	action,
-	delay,
-}: {
-	stepRole: string;
-	action: string;
-	delay: number;
-}) {
+function WorkflowStep({ role, action }: { role: string; action: string }) {
 	return (
-		<motion.div
-			initial={{ opacity: 0, x: -20 }}
-			whileInView={{ opacity: 1, x: 0 }}
-			viewport={{ once: true }}
-			transition={{ duration: 0.5, delay }}
-			className="relative rounded-2xl border border-white/5 bg-slate-900/30 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-slate-900/50"
-		>
-			<span className="absolute top-8 -left-[54px] flex h-6 w-6 items-center justify-center rounded-full bg-red-600 shadow-md ring-4 ring-slate-950 animate-pulse-slow">
-				<div className="h-2 w-2 rounded-full bg-white" />
-			</span>
-			<h4 className="mb-2 font-bold text-white text-xl">{stepRole}</h4>
-			<p className="text-lg text-slate-300 leading-relaxed">{action}</p>
-		</motion.div>
+		<div className="relative border border-white/5 bg-slate-900/30 p-4">
+			<span className="absolute top-5 -left-[31px] flex h-2 w-2 rounded-full bg-red-600 shadow-[0_0_10px_#ef4444]" />
+			<h4 className="font-bold text-white text-xs uppercase mb-1">{role}</h4>
+			<p className="text-xs text-slate-400 leading-relaxed">{action}</p>
+		</div>
 	);
 }
-
