@@ -248,12 +248,14 @@ export default function SupplyOfficerDashboard() {
 	const approvedCount = stats?.approved || 0;
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<h2 className="font-bold text-3xl tracking-tight">Station Logistics</h2>
+		<div className="space-y-6 font-mono text-xs">
+			<div className="flex flex-wrap items-center justify-between gap-4 border-white/10 border-b pb-4">
+				<h2 className="font-bold text-lg text-white uppercase tracking-wider">
+					{"/// STATION LOGISTICS CONSOLE"}
+				</h2>
 				{/* biome-ignore lint/suspicious/noExplicitAny: types are broken for Link href */}
 				<Link href={"/requests/new" as any}>
-					<Button className="bg-red-600 hover:bg-red-700">
+					<Button className="h-8 rounded-none border border-foreground bg-red-600 font-bold text-[10px] text-white uppercase shadow-[2px_2px_0px_0px_#000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000]">
 						<Plus className="mr-2 h-4 w-4" />
 						Create Request
 					</Button>
@@ -261,44 +263,48 @@ export default function SupplyOfficerDashboard() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				<Card>
+				<Card className="console-card crosshair-corner rounded-none border-white/10">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Pending Requests
+						<CardTitle className="font-bold text-[10px] text-slate-400 uppercase">
+							PENDING REQUESTS TELEMETRY
 						</CardTitle>
-						<Clock className="h-4 w-4 text-muted-foreground" />
+						<Clock className="h-4 w-4 text-red-500" />
 					</CardHeader>
 					<CardContent>
-						<div className="font-bold text-2xl">{pendingCount}</div>
-						<p className="text-muted-foreground text-xs">
-							Requests awaiting approval
+						<div className="font-black text-2xl text-white">{pendingCount}</div>
+						<p className="mt-1 text-[9px] text-slate-500 uppercase tracking-wider">
+							Awaiting validation/approval
 						</p>
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="console-card crosshair-corner rounded-none border-white/10">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Draft Requests
+						<CardTitle className="font-bold text-[10px] text-slate-400 uppercase">
+							DRAFT REQUESTS STAGING
 						</CardTitle>
-						<FileText className="h-4 w-4 text-muted-foreground" />
+						<FileText className="h-4 w-4 text-slate-400" />
 					</CardHeader>
 					<CardContent>
-						<div className="font-bold text-2xl">{draftCount}</div>
-						<p className="text-muted-foreground text-xs">Not yet submitted</p>
+						<div className="font-black text-2xl text-white">{draftCount}</div>
+						<p className="mt-1 text-[9px] text-slate-500 uppercase tracking-wider">
+							Not yet submitted
+						</p>
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card className="console-card crosshair-corner rounded-none border-white/10">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Completed Requests
+						<CardTitle className="font-bold text-[10px] text-slate-400 uppercase">
+							COMPLETED DISPATCH MATRIX
 						</CardTitle>
-						<Package className="h-4 w-4 text-muted-foreground" />
+						<Package className="h-4 w-4 text-slate-400" />
 					</CardHeader>
 					<CardContent>
-						<div className="font-bold text-2xl">{approvedCount}</div>
-						<p className="text-muted-foreground text-xs">
+						<div className="font-black text-2xl text-white">
+							{approvedCount}
+						</div>
+						<p className="mt-1 text-[9px] text-slate-500 uppercase tracking-wider">
 							Fully approved & delivered
 						</p>
 					</CardContent>
@@ -306,8 +312,10 @@ export default function SupplyOfficerDashboard() {
 			</div>
 
 			<div className="space-y-4">
-				<h3 className="font-semibold text-xl">Recent Requests</h3>
-				<Card>
+				<h3 className="font-bold text-slate-400 text-xs uppercase tracking-wider">
+					Recent Request Manifests
+				</h3>
+				<Card className="console-card crosshair-corner rounded-none border-white/10">
 					<CardContent className="p-0">
 						<div className="overflow-x-auto">
 							<Table>

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,23 +37,33 @@ export default function Header() {
 	}
 
 	return (
-		<header className="sticky top-0 z-50 w-full border-b border-foreground bg-background font-mono text-xs">
+		<header className="sticky top-0 z-50 w-full border-foreground border-b bg-background font-mono text-xs">
 			<div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
 				{/* Logo & Branding */}
 				<Link href="/" className="flex items-center gap-4 hover:opacity-90">
 					<div className="flex items-center gap-1.5">
 						<div className="relative h-8 w-8">
-							<Image src="/images/bfpNationalLogo.png" alt="BFP National Logo" fill className="object-contain" />
+							<Image
+								src="/images/bfpNationalLogo.png"
+								alt="BFP National Logo"
+								fill
+								className="object-contain"
+							/>
 						</div>
 						<div className="relative h-8 w-8">
-							<Image src="/images/bfpRegion12Logo.png" alt="BFP Region 12 Logo" fill className="object-contain" />
+							<Image
+								src="/images/bfpRegion12Logo.png"
+								alt="BFP Region 12 Logo"
+								fill
+								className="object-contain"
+							/>
 						</div>
 					</div>
 					<div className="hidden flex-col md:flex">
-						<span className="font-bold text-foreground leading-none tracking-wider uppercase">
+						<span className="font-bold text-foreground uppercase leading-none tracking-wider">
 							BLMS XII
 						</span>
-						<span className="font-bold text-[8px] text-muted-foreground uppercase leading-none mt-1">
+						<span className="mt-1 font-bold text-[8px] text-muted-foreground uppercase leading-none">
 							{"/// OPERATIONS PORTAL"}
 						</span>
 					</div>
@@ -65,13 +74,13 @@ export default function Header() {
 					<nav className="hidden items-center gap-6 md:flex">
 						<Link
 							href="/"
-							className={`uppercase font-bold tracking-wider hover:text-primary ${pathname === "/" ? "text-primary underline decoration-2 underline-offset-4" : "text-muted-foreground"}`}
+							className={`font-bold uppercase tracking-wider hover:text-primary ${pathname === "/" ? "text-primary underline decoration-2 underline-offset-4" : "text-muted-foreground"}`}
 						>
 							Home
 						</Link>
 					</nav>
 
-					<div className="flex items-center gap-3 border-l border-border pl-4">
+					<div className="flex items-center gap-3 border-border border-l pl-4">
 						<ModeToggle />
 						<UserMenu />
 
@@ -82,7 +91,7 @@ export default function Header() {
 						{!isLoginPage && !session && (
 							<div className="hidden md:block">
 								<Link href="/login">
-									<Button className="h-8 rounded-none border border-foreground bg-primary text-white font-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] transition-all">
+									<Button className="h-8 rounded-none border border-foreground bg-primary font-bold text-[10px] text-white uppercase shadow-[2px_2px_0px_0px_#000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000]">
 										PARTNER ACCESS
 									</Button>
 								</Link>
@@ -112,25 +121,38 @@ function MobileMenu({
 					<span className="sr-only">Toggle menu</span>
 				</Button>
 			</SheetTrigger>
-			<SheetContent side="right" className="border-border bg-slate-950 font-mono text-xs text-slate-200">
+			<SheetContent
+				side="right"
+				className="border-border bg-slate-950 font-mono text-slate-200 text-xs"
+			>
 				<SheetHeader>
-					<SheetTitle className="text-white text-sm uppercase">Navigation Matrix</SheetTitle>
+					<SheetTitle className="text-sm text-white uppercase">
+						Navigation Matrix
+					</SheetTitle>
 				</SheetHeader>
 				<div className="mt-8 flex flex-col gap-6">
 					<nav className="flex flex-col gap-4 font-bold text-sm uppercase">
-						<Link href="/" className="text-slate-300 hover:text-red-500" onClick={() => setOpen(false)}>
+						<Link
+							href="/"
+							className="text-slate-300 hover:text-red-500"
+							onClick={() => setOpen(false)}
+						>
 							Home
 						</Link>
 						{!isLoginPage && !session && (
-							<Link href="/login" className="text-slate-300 hover:text-red-500" onClick={() => setOpen(false)}>
+							<Link
+								href="/login"
+								className="text-slate-300 hover:text-red-500"
+								onClick={() => setOpen(false)}
+							>
 								Partner Access
 							</Link>
 						)}
 					</nav>
 					{session && (
-						<div className="border-t border-white/10 pt-6">
+						<div className="border-white/10 border-t pt-6">
 							<Link href="/dashboard" onClick={() => setOpen(false)}>
-								<Button className="w-full bg-red-600 rounded-none text-white hover:bg-red-700 font-bold uppercase text-[10px]">
+								<Button className="w-full rounded-none bg-red-600 font-bold text-[10px] text-white uppercase hover:bg-red-700">
 									Go to Dashboard
 								</Button>
 							</Link>

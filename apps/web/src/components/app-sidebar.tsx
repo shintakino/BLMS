@@ -39,7 +39,12 @@ export function AppSidebar({ className }: SidebarProps) {
 	const links = getLinksByRole(role);
 
 	return (
-		<div className={cn("h-screen border-r border-white/10 bg-slate-950/80 pb-12 font-mono text-xs crt-scanline", className)}>
+		<div
+			className={cn(
+				"crt-scanline h-screen border-white/10 border-r bg-slate-950/80 pb-12 font-mono text-xs",
+				className,
+			)}
+		>
 			<div className="space-y-4 py-4">
 				<div className="px-3 py-2">
 					<div className="mb-6 flex items-center gap-3 px-4">
@@ -52,7 +57,7 @@ export function AppSidebar({ className }: SidebarProps) {
 							/>
 						</div>
 						<div className="flex flex-col">
-							<span className="font-bold text-white uppercase tracking-wider text-[10px]">
+							<span className="font-bold text-[10px] text-white uppercase tracking-wider">
 								BLMS COMMAND
 							</span>
 							<span className="font-bold text-[8px] text-red-500 uppercase">
@@ -68,9 +73,9 @@ export function AppSidebar({ className }: SidebarProps) {
 									variant={pathname === link.href ? "secondary" : "ghost"}
 									className={cn(
 										"w-full justify-start rounded-none text-xs uppercase tracking-wider",
-										pathname === link.href 
-											? "bg-red-950/20 text-red-400 border-l-2 border-red-600 font-bold" 
-											: "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+										pathname === link.href
+											? "border-red-600 border-l-2 bg-red-950/20 font-bold text-red-400"
+											: "text-slate-400 hover:bg-white/5 hover:text-slate-200",
 									)}
 								>
 									<link.icon className="mr-2 h-4 w-4" />
@@ -95,16 +100,16 @@ export function AppSidebar({ className }: SidebarProps) {
 										className="h-full w-full object-cover"
 									/>
 								) : (
-									<span className="font-bold text-xs text-red-500">
+									<span className="font-bold text-red-500 text-xs">
 										{session.user.name.charAt(0)}
 									</span>
 								)}
 							</div>
 							<div className="flex-1 overflow-hidden">
-								<p className="truncate font-bold text-slate-200 uppercase text-[10px]">
+								<p className="truncate font-bold text-[10px] text-slate-200 uppercase">
 									{session.user.name}
 								</p>
-								<p className="truncate text-red-400 text-[8px] uppercase tracking-wider">
+								<p className="truncate text-[8px] text-red-400 uppercase tracking-wider">
 									{role?.replace(/-/g, " ")}
 								</p>
 							</div>
@@ -128,10 +133,12 @@ export function MobileSidebar() {
 			</SheetTrigger>
 			<SheetContent
 				side="left"
-				className="w-[80%] max-w-[300px] bg-slate-950 border-r border-white/10 p-0 text-slate-200 font-mono"
+				className="w-[80%] max-w-[300px] border-white/10 border-r bg-slate-950 p-0 font-mono text-slate-200"
 			>
-				<SheetHeader className="border-b border-white/10 px-6 py-4">
-					<SheetTitle className="text-white text-xs uppercase tracking-wider">BLMS COMMAND</SheetTitle>
+				<SheetHeader className="border-white/10 border-b px-6 py-4">
+					<SheetTitle className="text-white text-xs uppercase tracking-wider">
+						BLMS COMMAND
+					</SheetTitle>
 				</SheetHeader>
 				<AppSidebar className="border-none" />
 			</SheetContent>

@@ -82,36 +82,42 @@ export default function StationCommanderDashboard({
 	const pendingCount = stats?.submitted || 0; // "To Validate" means SUBMITTED specifically
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<h2 className="font-bold text-3xl tracking-tight">Station Command</h2>
-				<p className="text-muted-foreground">Welcome, {session.user.name}</p>
+		<div className="space-y-6 font-mono text-xs">
+			<div className="flex flex-wrap items-center justify-between gap-4 border-white/10 border-b pb-4">
+				<h2 className="font-bold text-lg text-white uppercase tracking-wider">
+					{"/// STATION COMMAND CONSOLE"}
+				</h2>
+				<p className="text-[10px] text-red-400 uppercase">
+					Welcome, {session.user.name} | terminal.active
+				</p>
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<Card>
+				<Card className="console-card crosshair-corner rounded-none border-white/10">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">To Validate</CardTitle>
-						<CheckCircle className="h-4 w-4 text-muted-foreground" />
+						<CardTitle className="font-bold text-[10px] text-slate-400 uppercase">
+							TELEMETRY: PENDING VALIDATION
+						</CardTitle>
+						<CheckCircle className="h-4 w-4 text-red-500" />
 					</CardHeader>
 					<CardContent>
-						<div className="font-bold text-2xl">
+						<div className="font-black text-2xl text-white">
 							{isLoading ? <Skeleton className="h-8 w-8" /> : pendingCount}
 						</div>
-						<p className="text-muted-foreground text-xs">
-							Requests requiring your attention
+						<p className="mt-1 text-[9px] text-red-400 uppercase tracking-wider">
+							● ACTION REQUIRED
 						</p>
 					</CardContent>
 				</Card>
-				<Card>
+				<Card className="console-card crosshair-corner rounded-none border-white/10">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Station Inventory
+						<CardTitle className="font-bold text-[10px] text-slate-400 uppercase">
+							STATION INVENTORY disposition
 						</CardTitle>
-						<Package className="h-4 w-4 text-muted-foreground" />
+						<Package className="h-4 w-4 text-slate-400" />
 					</CardHeader>
 					<CardContent>
-						<div className="font-bold text-2xl">
+						<div className="font-black text-2xl text-white">
 							{inventoryLoading || !inventoryData ? (
 								<Skeleton className="h-8 w-8" />
 							) : (
@@ -119,33 +125,34 @@ export default function StationCommanderDashboard({
 								(inventoryData.assets.length || 0)
 							)}
 						</div>
-						<p className="text-muted-foreground text-xs">Manage assets</p>
-						<Link
-							/* biome-ignore lint/suspicious/noExplicitAny: cast required for dynamic route */
-							href={"/inventory" as any}
-							className="mt-2 inline-block text-blue-600 text-xs hover:underline"
-						>
-							View Full Inventory
-						</Link>
-
-						{inventoryData && (
-							<div className="mt-4 flex flex-col gap-2 border-t pt-4">
+						<p className="mt-1 text-[9px] text-slate-500 uppercase tracking-wider">
+							active monitored units
+						</p>
+						<div className="mt-4 flex gap-4 border-white/5 border-t pt-4 text-[10px]">
+							<Link
+								href={"/inventory" as any}
+								className="text-red-400 hover:underline"
+							>
+								[VIEW DISPOSITION]
+							</Link>
+							{inventoryData && (
 								<Link
-									/* biome-ignore lint/suspicious/noExplicitAny: typed routes issue */
 									href={"/transfers" as any}
-									className="mt-4 block text-center text-muted-foreground text-xs hover:underline"
+									className="text-slate-400 hover:underline"
 								>
-									Manage Incoming/Outgoing Transfers
+									[MANAGE TRANSFERS]
 								</Link>
-							</div>
-						)}
+							)}
+						</div>
 					</CardContent>
 				</Card>
 			</div>
 
-			<Card className="col-span-1 sm:col-span-2">
+			<Card className="console-card crosshair-corner col-span-1 rounded-none border-white/10 sm:col-span-2">
 				<CardHeader>
-					<CardTitle>Pending Validations</CardTitle>
+					<CardTitle className="font-bold text-slate-400 text-xs uppercase">
+						PENDING VALIDATIONS MATRIX
+					</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (

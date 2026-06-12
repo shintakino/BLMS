@@ -108,17 +108,29 @@
 		content: " ";
 		display: block;
 		position: absolute;
-		top: 0; left: 0; bottom: 0; right: 0;
-		background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		background:
+			linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+			linear-gradient(
+				90deg,
+				rgba(255, 0, 0, 0.06),
+				rgba(0, 255, 0, 0.02),
+				rgba(0, 0, 255, 0.06)
+			);
 		z-index: 10;
-		background-size: 100% 4px, 6px 100%;
+		background-size:
+			100% 4px,
+			6px 100%;
 		pointer-events: none;
 		opacity: 0.15;
 	}
 
 	/* Tactical Operation Radar Grid */
 	.tactical-grid {
-		background-image: 
+		background-image:
 			linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
 			linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 		background-size: 30px 30px;
@@ -138,8 +150,14 @@
 		line-height: 1;
 		pointer-events: none;
 	}
-	.crosshair-corner::before { top: -6px; left: -6px; }
-	.crosshair-corner::after { bottom: -6px; right: -6px; }
+	.crosshair-corner::before {
+		top: -6px;
+		left: -6px;
+	}
+	.crosshair-corner::after {
+		bottom: -6px;
+		right: -6px;
+	}
 }
 
 @layer base {
