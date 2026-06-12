@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config({
-	path: "../../apps/web/.env",
-});
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, "../../../apps/web/.env");
+dotenv.config({ path: envPath });
 
 async function seedSupplyOfficerData() {
 	// Dynamic imports
