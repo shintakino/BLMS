@@ -68,7 +68,7 @@ describe("RequestActions", () => {
 				userRole="regional-director"
 			/>,
 		);
-		expect(screen.getByText("Grant Final Approval")).toBeDefined();
+		expect(screen.getByText("Final Approval")).toBeDefined();
 		expect(screen.getByText("Disapprove")).toBeDefined();
 	});
 });

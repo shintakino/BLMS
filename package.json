@@ -36,5 +36,9 @@
 			"biome check --write ."
 		]
 	},
+	"overrides": {
+		"react": "19.1.0",
+		"react-dom": "19.1.0"
+	},
 	"packageManager": "npm@10.9.3"
 }
